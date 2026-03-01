@@ -1,0 +1,2873 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mercedes-Benz VIN Decoder | Sun Valley Mercedes Transmissions</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@300;400;600&family=Rajdhani:wght@300;400;500;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --carbon: #0f0f0f;
+    --charcoal: #1a1a1a;
+    --steel: #2a2a2a;
+    --gunmetal: #3a3a3a;
+    --silver-dark: #888;
+    --silver: #b8b8b8;
+    --silver-light: #d4d4d4;
+    --chrome: #e8e8e8;
+    --white: #f5f5f5;
+    --gold: #c9a84c;
+    --gold-light: #e0c06a;
+    --red: #cc2222;
+    --green: #1a7a3a;
+    --blue-dim: #1a3a5c;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { background: #daeaf7; color: #1a2a3a; font-family: 'Rajdhani', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse 80% 50% at 50% -20%, rgba(100,160,220,0.15) 0%, transparent 70%);
+    pointer-events: none; z-index: 0;
+  }
+  .container { position: relative; z-index: 1; max-width: 960px; margin: 0 auto; padding: 0 24px 80px; }
+  header { padding: 48px 0 32px; text-align: center; }
+  .logo-line { display: flex; align-items: center; justify-content: center; gap: 16px; margin-bottom: 8px; }
+  .logo-emblem { width: 52px; height: 52px; }
+  .logo-emblem svg { width: 100%; height: 100%; filter: drop-shadow(0 0 8px rgba(201,168,76,0.4)); }
+  .brand-name { font-family: 'Cormorant Garamond', serif; font-size: 13px; font-weight: 300; letter-spacing: 6px; text-transform: uppercase; color: #5a7a9a; }
+  h1 { font-family: 'Cormorant Garamond', serif; font-size: clamp(28px, 5vw, 48px); font-weight: 300; letter-spacing: 2px; color: #1a2a3a; line-height: 1.1; margin-bottom: 6px; }
+  h1 span { color: #b8860b; font-weight: 600; }
+  .subtitle { font-size: 13px; letter-spacing: 4px; text-transform: uppercase; color: #5a7a9a; margin-top: 8px; }
+  .header-rule { width: 100%; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); margin: 28px 0; opacity: 0.5; }
+  .input-section { background: linear-gradient(135deg, #ffffff, #eef5fc); border: 1px solid #b8d4ea; border-radius: 4px; padding: 32px; margin-bottom: 32px; position: relative; overflow: hidden; box-shadow: 0 2px 12px rgba(100,150,200,0.1); }
+  .input-section::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #b8860b, transparent); }
+  .input-label { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #b8860b; margin-bottom: 12px; display: block; }
+  .vin-input-wrap { display: flex; gap: 12px; align-items: stretch; }
+  #vinInput { flex: 1; background: #f4f9fd; border: 1px solid #b8d4ea; border-radius: 3px; color: #1a2a3a; font-family: 'Share Tech Mono', monospace; font-size: 22px; letter-spacing: 4px; padding: 14px 20px; text-transform: uppercase; outline: none; transition: border-color 0.3s, box-shadow 0.3s; }
+  #vinInput::placeholder { color: #a0b8cc; letter-spacing: 3px; font-size: 16px; }
+  #vinInput:focus { border-color: #b8860b; box-shadow: 0 0 0 2px rgba(184,134,11,0.15); }
+  #vinInput.valid { border-color: #2a7a3a; }
+  #vinInput.invalid { border-color: #cc2222; }
+  .decode-btn { background: linear-gradient(135deg, #c9a84c, #a88030); border: none; border-radius: 3px; color: #fff; font-family: 'Rajdhani', sans-serif; font-size: 13px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; padding: 14px 28px; cursor: pointer; transition: all 0.2s; white-space: nowrap; }
+  .decode-btn:hover { background: linear-gradient(135deg, #e0c06a, #c9a84c); transform: translateY(-1px); box-shadow: 0 4px 20px rgba(184,134,11,0.3); }
+  .decode-btn:active { transform: translateY(0); }
+  .vin-counter { margin-top: 10px; font-size: 12px; letter-spacing: 2px; color: #6a8aaa; display: flex; justify-content: space-between; }
+  #charCount { color: #b8860b; }
+  .error-msg { display: none; background: rgba(204,34,34,0.1); border: 1px solid rgba(204,34,34,0.3); border-radius: 3px; color: #ff6666; font-size: 13px; letter-spacing: 1px; padding: 12px 16px; margin-top: 12px; }
+  #results { display: none; animation: fadeSlideUp 0.5s ease forwards; }
+  @keyframes fadeSlideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .vin-breakdown { background: #ffffff; border: 1px solid #b8d4ea; border-radius: 4px; padding: 24px; margin-bottom: 24px; overflow-x: auto; box-shadow: 0 2px 8px rgba(100,150,200,0.08); }
+  .breakdown-title { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #b8860b; margin-bottom: 20px; }
+  .vin-chars { display: flex; gap: 4px; flex-wrap: nowrap; min-width: max-content; }
+  .vin-char-group { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .vin-char { background: #e4eef7; border: 1px solid #b8d4ea; border-radius: 2px; color: #1a2a3a; font-family: 'Share Tech Mono', monospace; font-size: 18px; width: 38px; height: 44px; display: flex; align-items: center; justify-content: center; }
+  .vin-char.highlight { background: rgba(184,134,11,0.12); border-color: #b8860b; color: #8a6000; box-shadow: 0 0 8px rgba(184,134,11,0.15); }
+  .vin-char.tx-highlight { background: rgba(30,140,60,0.12); border-color: #2a9a50; color: #1a6a30; box-shadow: 0 0 8px rgba(30,140,60,0.15); }
+  .vin-char-pos { font-size: 9px; letter-spacing: 1px; color: #6a8aaa; text-align: center; }
+  .vin-char-label { font-size: 8px; letter-spacing: 0.5px; color: #b8860b; text-align: center; max-width: 38px; line-height: 1.2; text-transform: uppercase; }
+  .vin-char-label.green { color: #1a7a30; }
+  .data-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+  .data-card { background: linear-gradient(135deg, #ffffff, #eef5fc); border: 1px solid #b8d4ea; border-radius: 4px; padding: 20px 24px; position: relative; overflow: hidden; box-shadow: 0 2px 8px rgba(100,150,200,0.08); }
+  .data-card::before { content: ''; position: absolute; top: 0; left: 0; width: 3px; height: 100%; background: #b8860b; opacity: 0.7; }
+  .card-label { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #6a8aaa; margin-bottom: 6px; }
+  .card-value { font-size: 22px; font-weight: 600; color: #1a2a3a; letter-spacing: 1px; line-height: 1.2; }
+  .card-sub { font-size: 12px; color: #6a8aaa; margin-top: 4px; letter-spacing: 1px; }
+  .card-value.gold { color: #8a6000; }
+  .card-value.good { color: #1a6a30; }
+  .card-value.warn { color: #8a6000; }
+  .transmission-panel { background: linear-gradient(135deg, #edfaf3, #f4fcf8); border: 1px solid #7dd3aa; border-radius: 4px; padding: 28px; margin-bottom: 24px; position: relative; overflow: hidden; box-shadow: 0 2px 12px rgba(30,140,80,0.08); }
+  .transmission-panel::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, transparent, #2a9a50, transparent); opacity: 0.6; }
+  .transmission-panel::after { content: 'TRANSMISSION'; position: absolute; right: 20px; top: 50%; transform: translateY(-50%); font-size: 60px; font-weight: 700; color: rgba(30,140,80,0.05); letter-spacing: 4px; white-space: nowrap; pointer-events: none; }
+  .tp-title { font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #1a7a30; margin-bottom: 6px; }
+  .tp-confidence { display: inline-block; font-size: 10px; letter-spacing: 2px; padding: 2px 10px; border-radius: 2px; margin-bottom: 18px; }
+  .tp-confidence.exact { background: rgba(30,140,80,0.12); color: #1a6a30; border: 1px solid rgba(30,140,80,0.3); }
+  .tp-confidence.likely { background: rgba(180,120,0,0.1); color: #7a5200; border: 1px solid rgba(180,120,0,0.25); }
+  .tp-confidence.estimated { background: rgba(180,50,50,0.08); color: #8a2020; border: 1px solid rgba(180,50,50,0.2); }
+  .tx-code-big { font-family: 'Share Tech Mono', monospace; font-size: 42px; font-weight: 400; color: #1a7a30; letter-spacing: 4px; line-height: 1; margin-bottom: 4px; }
+  .tx-name-big { font-family: 'Cormorant Garamond', serif; font-size: 24px; color: #1a2a3a; margin-bottom: 20px; }
+  .tp-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 16px; }
+  .tp-item label { display: block; font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #6a8aaa; margin-bottom: 4px; }
+  .tp-item .tp-val { font-size: 16px; font-weight: 600; color: #1a2a3a; letter-spacing: 1px; }
+  .tp-item .tp-sub { font-size: 12px; color: #6a8aaa; margin-top: 2px; line-height: 1.4; }
+  .multi-match { background: rgba(180,120,0,0.06); border: 1px solid rgba(180,120,0,0.2); border-radius: 4px; padding: 16px 20px; margin-top: 16px; }
+  .multi-match-title { font-size: 10px; letter-spacing: 3px; text-transform: uppercase; color: #7a5200; margin-bottom: 10px; }
+  .match-row { display: flex; align-items: flex-start; gap: 12px; padding: 8px 0; border-bottom: 1px solid rgba(0,0,0,0.06); }
+  .match-row:last-child { border-bottom: none; }
+  .match-code { font-family: 'Share Tech Mono', monospace; font-size: 15px; color: #1a7a30; min-width: 70px; }
+  .match-desc { font-size: 13px; color: #1a2a3a; }
+  .match-note { font-size: 11px; color: #6a8aaa; }
+  .decode-table { background: #ffffff; border: 1px solid #b8d4ea; border-radius: 4px; overflow: hidden; margin-bottom: 24px; box-shadow: 0 2px 8px rgba(100,150,200,0.08); }
+  .decode-table-header { background: #eef5fc; padding: 14px 24px; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; color: #b8860b; border-bottom: 1px solid #b8d4ea; }
+  table { width: 100%; border-collapse: collapse; }
+  td { padding: 12px 24px; border-bottom: 1px solid #e4eef7; font-size: 14px; vertical-align: top; }
+  tr:last-child td { border-bottom: none; }
+  tr:hover td { background: #f4f9fd; }
+  td:first-child { color: #6a8aaa; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; width: 28%; padding-right: 16px; padding-top: 14px; }
+  td:nth-child(2) { font-family: 'Share Tech Mono', monospace; color: #8a6000; font-size: 13px; letter-spacing: 2px; width: 14%; padding-top: 14px; }
+  td:last-child { color: #1a2a3a; font-weight: 500; letter-spacing: 0.5px; }
+  .cta-bar { background: linear-gradient(135deg, rgba(184,134,11,0.08), rgba(184,134,11,0.04)); border: 1px solid rgba(184,134,11,0.25); border-radius: 4px; padding: 24px 32px; display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 16px; box-shadow: 0 2px 8px rgba(100,150,200,0.08); }
+  .cta-text h3 { font-family: 'Cormorant Garamond', serif; font-size: 22px; font-weight: 400; color: #1a2a3a; margin-bottom: 4px; }
+  .cta-text p { font-size: 13px; color: #6a8aaa; letter-spacing: 1px; }
+  .cta-text p span { color: #8a6000; font-weight: 600; }
+  .cta-btn { background: transparent; border: 1px solid #b8860b; border-radius: 3px; color: #8a6000; font-family: 'Rajdhani', sans-serif; font-size: 12px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; padding: 12px 24px; cursor: pointer; text-decoration: none; transition: all 0.2s; display: inline-block; }
+  .cta-btn:hover { background: #b8860b; color: #fff; }
+  footer { text-align: center; padding: 32px 0 0; border-top: 1px solid #b8d4ea; margin-top: 48px; }
+  footer p { font-size: 11px; letter-spacing: 3px; color: #6a8aaa; text-transform: uppercase; margin-bottom: 6px; }
+  footer a { color: #8a6000; text-decoration: none; }
+  @media (max-width: 600px) { .vin-input-wrap { flex-direction: column; } #vinInput { font-size: 16px; letter-spacing: 2px; } .cta-bar { flex-direction: column; text-align: center; } .tx-code-big { font-size: 32px; } }
+
+.sales-panel {
+  background: linear-gradient(135deg, #0d1f2d 0%, #0a1520 100%);
+  border: 1px solid #c9a84c44;
+  border-radius: 12px;
+  padding: 24px;
+  margin-top: 20px;
+}
+.sales-panel-title {
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #c9a84c;
+  margin-bottom: 6px;
+}
+.sales-panel-sub {
+  font-size: 12px;
+  color: #6a8aaa;
+  margin-bottom: 16px;
+}
+.sales-match-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.sales-match-table th {
+  background: #1a4a7a;
+  color: #fff;
+  padding: 8px 12px;
+  text-align: left;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+.sales-match-table td {
+  padding: 8px 12px;
+  border-bottom: 1px solid #1a2a3a;
+  color: #c8d8e8;
+  vertical-align: middle;
+}
+.sales-match-table tr:nth-child(even) td { background: #0d1f2d88; }
+.sales-match-table tr:hover td { background: #1a3a5a55; }
+.sales-match-vin { font-family: 'Share Tech Mono', monospace; letter-spacing: 2px; font-size: 12px; }
+.sales-match-vin .match-highlight { color: #4ade80; font-weight: bold; }
+.sales-match-vin .match-rest { color: #6a8aaa; }
+.sales-match-price { color: #4ade80; font-weight: bold; }
+.sales-no-match {
+  color: #6a8aaa;
+  font-style: italic;
+  font-size: 13px;
+  padding: 12px 0;
+}
+.sales-match-count {
+  display: inline-block;
+  background: #c9a84c22;
+  color: #c9a84c;
+  border: 1px solid #c9a84c44;
+  border-radius: 20px;
+  padding: 2px 10px;
+  font-size: 11px;
+  font-weight: 700;
+  margin-left: 10px;
+  vertical-align: middle;
+}
+
+
+  .search-divider{display:flex;align-items:center;gap:12px;margin:24px 0 20px;}
+  .search-divider span{color:#6a8aaa;font-size:11px;letter-spacing:3px;text-transform:uppercase;white-space:nowrap;}
+  .search-divider::before,.search-divider::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,transparent,#b8d4ea,transparent);}
+  .model-input-wrap{display:flex;gap:10px;align-items:center;flex-wrap:wrap;}
+  #modelSelect{flex:1;min-width:200px;background:#f4f9fd;border:1px solid #b8d4ea;border-radius:3px;color:#1a2a3a;font-family:'Rajdhani',sans-serif;font-size:16px;padding:14px 16px;outline:none;cursor:pointer;transition:border-color 0.3s;}
+  #modelSelect:focus{border-color:#b8860b;box-shadow:0 0 0 2px rgba(184,134,11,0.15);}
+  .model-search-btn{background:linear-gradient(135deg,#1a4a7a,#2a6aaa);color:#fff;border:none;border-radius:3px;padding:14px 24px;font-family:'Rajdhani',sans-serif;font-size:14px;font-weight:600;letter-spacing:2px;text-transform:uppercase;cursor:pointer;white-space:nowrap;}
+  .model-search-btn:hover{background:linear-gradient(135deg,#2a5a8a,#3a7aba);}
+  .price-edit-input{width:100px;background:#1a2a3a;border:1px solid #b8d4ea;border-radius:3px;color:#fff;padding:6px 10px;font-size:14px;font-family:'Rajdhani',sans-serif;}
+  .price-save-btn{background:#1a4a7a;color:#fff;border:none;border-radius:3px;padding:6px 14px;font-size:13px;font-family:'Rajdhani',sans-serif;font-weight:600;cursor:pointer;letter-spacing:1px;}
+  .price-reset-btn{background:#3a2a1a;color:#c9a84c;border:1px solid #c9a84c44;border-radius:3px;padding:6px 14px;font-size:13px;font-family:'Rajdhani',sans-serif;font-weight:600;cursor:pointer;letter-spacing:1px;}
+
+</style>
+</head>
+<body>
+<div class="container">
+
+  <header>
+    <div class="logo-line">
+      <img src="data:image/jpeg;base64,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AA4AAAAAAAAAAAAAP4AAADhCSU0EDQAAAAAABAAAAIo4QklNBBkAAAAAAAQAAAAaOEJJTQPzAAAAAAAJAAAAAAAAAAABADhCSU0nEAAAAAAACgABAAAAAAAAAAE4QklNA/UAAAAAAEgAL2ZmAAEAbGZmAAYAAAAAAAEAL2ZmAAEAoZmaAAYAAAAAAAEAMgAAAAEAWgAAAAYAAAAAAAEANQAAAAEALQAAAAYAAAAAAAE4QklNA/gAAAAAAHAAAP////////////////////////////8D6AAAAAD/////////////////////////////A+gAAAAA/////////////////////////////wPoAAAAAP////////////////////////////8D6AAAOEJJTQQIAAAAAAAQAAAAAQAAAkAAAAJAAAAAADhCSU0EHgAAAAAABAAAAAA4QklNBBoAAAAAA0sAAAAGAAAAAAAAAAAAAAlyAAAXcAAAAAsAUwB1AG4ARABTAEMAXwAxADAAMAA3AAAAAQAAAAAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAABdwAAAJcgAAAAAAAAAAAAAAAAAAAAABAAAAAAAAAAAAAAAAAAAAAAAAABAAAAABAAAAAAAAbnVsbAAAAAIAAAAGYm91bmRzT2JqYwAAAAEAAAAAAABSY3QxAAAABAAAAABUb3AgbG9uZwAAAAAAAAAATGVmdGxvbmcAAAAAAAAAAEJ0b21sb25nAAAJcgAAAABSZ2h0bG9uZwAAF3AAAAAGc2xpY2VzVmxMcwAAAAFPYmpjAAAAAQAAAAAABXNsaWNlAAAAEgAAAAdzbGljZUlEbG9uZwAAAAAAAAAHZ3JvdXBJRGxvbmcAAAAAAAAABm9yaWdpbmVudW0AAAAMRVNsaWNlT3JpZ2luAAAADWF1dG9HZW5lcmF0ZWQAAAAAVHlwZWVudW0AAAAKRVNsaWNlVHlwZQAAAABJbWcgAAAABmJvdW5kc09iamMAAAABAAAAAAAAUmN0MQAAAAQAAAAAVG9wIGxvbmcAAAAAAAAAAExlZnRsb25nAAAAAAAAAABCdG9tbG9uZwAACXIAAAAAUmdodGxvbmcAABdwAAAAA3VybFRFWFQAAAABAAAAAAAAbnVsbFRFWFQAAAABAAAAAAAATXNnZVRFWFQAAAABAAAAAAAGYWx0VGFnVEVYVAAAAAEAAAAAAA5jZWxsVGV4dElzSFRNTGJvb2wBAAAACGNlbGxUZXh0VEVYVAAAAAEAAAAAAAlob3J6QWxpZ25lbnVtAAAAD0VTbGljZUhvcnpBbGlnbgAAAAdkZWZhdWx0AAAACXZlcnRBbGlnbmVudW0AAAAPRVNsaWNlVmVydEFsaWduAAAAB2RlZmF1bHQAAAALYmdDb2xvclR5cGVlbnVtAAAAEUVTbGljZUJHQ29sb3JUeXBlAAAAAE5vbmUAAAAJdG9wT3V0c2V0bG9uZwAAAAAAAAAKbGVmdE91dHNldGxvbmcAAAAAAAAADGJvdHRvbU91dHNldGxvbmcAAAAAAAAAC3JpZ2h0T3V0c2V0bG9uZwAAAAAAOEJJTQQoAAAAAAAMAAAAAj/wAAAAAAAAOEJJTQQUAAAAAAAEAAAAuDhCSU0EDAAAAAAOPQAAAAEAAACgAAAAQAAAAeAAAHgAAAAOIQAYAAH/2P/gABBKRklGAAECAABIAEgAAP/tAAxBZG9iZV9DTQAB/+4ADkFkb2JlAGSAAAAAAf/bAIQADAgICAkIDAkJDBELCgsRFQ8MDA8VGBMTFRMTGBEMDAwMDAwRDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAENCwsNDg0QDg4QFA4ODhQUDg4ODhQRDAwMDAwREQwMDAwMDBEMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwMDAwM/8AAEQgAQACgAwEiAAIRAQMRAf/dAAQACv/EAT8AAAEFAQEBAQEBAAAAAAAAAAMAAQIEBQYHCAkKCwEAAQUBAQEBAQEAAAAAAAAAAQACAwQFBgcICQoLEAABBAEDAgQCBQcGCAUDDDMBAAIRAwQhEjEFQVFhEyJxgTIGFJGhsUIjJBVSwWIzNHKC0UMHJZJT8OHxY3M1FqKygyZEk1RkRcKjdDYX0lXiZfKzhMPTdePzRieUpIW0lcTU5PSltcXV5fVWZnaGlqa2xtbm9jdHV2d3h5ent8fX5/cRAAICAQIEBAMEBQYHBwYFNQEAAhEDITESBEFRYXEiEwUygZEUobFCI8FS0fAzJGLhcoKSQ1MVY3M08SUGFqKygwcmNcLSRJNUoxdkRVU2dGXi8rOEw9N14/NGlKSFtJXE1OT0pbXF1eX1VmZ2hpamtsbW5vYnN0dXZ3eHl6e3x//aAAwDAQACEQMRAD8A9VSSTOc1olxAA7lJS6SweofWT7B1h2Pca2YFNDnWucCH+tuxmUtbZu2Nrs+2Vs91X/X61zNfUcrGcMlttTMn6wlgOWy9jnMqrtsor9T0ftTaqrbcn9FnVuyvsdd9XTPTx/slWUkp9ESXG9H6tidPxs70RDq7X2Z2c53q452GvGpyq/0zW+nfQxu71sr7R6lF7L8rqOXTffZ0nSsvJuqfXm2Y7suuywOZju4YHH0fVqL7XU3ens9av1bf0n+ESU3kkkklKSSSSUpJJJJSkkkklKSSSSUpJJJJSkkkklP/0PVVldfZh5+Fk9He9ll9tPqvxTDnupa5rbXsqd/mVu/0/pfza1Vyn1u+wW2ljbdnUcereyiyp1ld4cLWsxGN2+lkZORX9qo+wb9/UMazLo9P1PTzenpTkXZF9ldGZbkmh2VR6PUcuus5DKS+trTiu+z1XNtousqp/S0Z+Pl/zfrW1eio9L6V1LqFQdg0UNxcrGGJk5ILbq7W2b2ZXUGv9V/6+52FTh59bLrX7/Sybruo/Z8f0myTcH5zMzCswsg+lZmY9TQ3CGG0uaz7XkY9z8lldf6b9ZrrZX6n2nKowvTpzLcfvOm2Nt6fjvbuh1TI3+pu+iPpfa9uV/7Efpv9Kkp8/uwuo7bcLIx34edfXjY2LTRIruvLLLMp+Y9v6PN+zt6lfn5Ox3oerjZHqW2ej+mvV3YV1wuz+nX14WNdUzEOOTaabcc1vymuyvVd623Lsqxq6+m+pkW24ubjUfaP060/raMe/Lw8atjLM17g2A6trw3cLaqn3+rXm4rL3UWOptx2/wBIo/nqrmUb8JlPoZe7FeaHYt1hx+iXNvtpbWyl9OVkWPMUtobRbZiudTV6FH6f0f2n1D0qL0p76nOxL8RuZRa23HeJZYz3A67drQ33b9/s9P8AnPU/RrGv+vP1eovfR6z7nVmHuordcwO7sNtHqV72/wBZWcGvF6h9XwzpbnYDbd+0tAc6q8WOOS2yS5tzm5jbmZG2z9N+k9K//DLM6fg/XrpuKzArPTb8bG/R4rhZdS4UtAZRS6t2PnfzLG7Gv9eyz/S2W2fpElJ/+f31f8cj/wBh7f8AyCPV9cOj2YrsyLq8dtxp321OrktZ61ltfq7HW1VVb7H+n+k9Om+30/Rq9RC3/Xpsu9HproB0OTbH4dOZ/wBUidJy3dewszA6xjCvIxbG05LGy1pcWU5lN9DmWWPoez1a31PryPVptr9aq5JTtsex7GvY4OY4BzXNMgg6hzSE5IaC5xgDUk8ALkOm35H1Syx0nqFpt6Tc/wDUchwANe4z6ft21+mz/D01/wBG/plFX7N+019H0+odRyM7qB6P0t0X1gOy8mA5uMx2rLHbvZZmW/8AaDGf/wCHsn9X9CrKSm7X1zAfdl07nM+wljbnvG1m57PX2Ns+jvqp/S5DHf0av9Jf6dazHfX/AOrLbAwXvs3WNprdVU+xtjne39XfS2xuT7vb+g9T/g0L6yYGLg9J6f0+isfZbs/EovY/3+oy3KosyPXc/d6z8lzf1h9v8/6lnqfTXRZdNV+LdTc3fVYxzXt4kEQ4SkpzeofWzoXTzULsgPfextlNdQ9R763fRvZVXus9D/h9voqXRvrR0XrdllPT7991Q3Orc0tJbOw2V7htuYx/st9Jz/Rf+ju9N6ofUbDoxsTqfpBxc7qeWx1j3OseW02OxqGuttL7X+nTUxvven6vhUM+tvQuoMDm5Fll2PYQ5wY6s4uXdDqp9Pfvoo/SbfU/Q1f6KtJTN/176Ax5YTkEtMGMe3nu36H5rvamf9fOgMsdWX2vLeXUs9dknXb6+G7Io9Tb7vT9T1F0SxPq41rcrrYaA0fb2mAI1OF05zj/AGklNro/XcLrLLrMNtwZQ8ML7qn1BxI3fovVDfU2/wCv5i0UkklP/9H1VZX1joxbcAuvw7M0g+mBTo9rbCG2On6Xo+1nrV7bKn/4ev0VqpJKfNbK66DVVj4+TkG/JB+y72NquqoYW9P6W66u/LqtzKv2biMv+0/9pfttv/ai31JYt2VVmNw8XqJwL8i3JblVOBLMZwtZXie9nptzLfS6WzCpfY9/6Kyuj/tb+l7fJ6ZkX5brzkyz2mmpzCRUWhzbHV7LKmPfZu/w9d3/AG1+jXOXfV/Kuuu6TgMurwbPs9ebdljeLPs21oyQ+xnvffUxn9Es9ay+uq/1ek/Z/wDKKU5FOQOquobFOXd1Gm54pziKvswte6yg9OyX+q+/Gs9T9Vs+yZH6X9V/yZ6n7PxtTp1+XX+y8uljmgZLMRzag5huH9EyHZ+NTXVQy1jLftrH/pGejgev+q/pKFa6Z0fKzsl/2oW/Y+n0uxcL7awPLrA8Px8l1Dm00WWYLambMllH6b1vR+0WW4l9+Ru9D6a/pnTmYtjxZbussse0EN3WvddsYHFzvTq3+lX/ACK0lJ8jAouwnYTC7Gqc3a0459NzI1aaXM+htWL/AMx8H/yw6l/7FPXRpJKedZ9ScFrg79odSO0zH2uwf9Jmx/8AmvWv03peB0vHdj4NQqre91thlz3vseZsuvutc+6+5/8ApbrHvVtJJTXz8DF6jivxctnqVPg8kOa4Hcy2qxvvqtrd76rWe+t6H0vpWF0nDbh4TNlYJc5xJc973a2XXWO99t1n59j1cSSU0epdHwup2YlmVvP2G9uTS1r3MabGe6v1WMIba1lmyxu/9z/jFdIBEHgp0klNLpPScTpOIcTE3lhsstc+17rHufa422Pstsl73bnJZHSMPJ6nidTt3nIwQ8UAPcKwbGmpz3Uz6b7PTstYx/8AwiupJKUqXTOk4vTG5AxjYftd7sm11r3WOL3BlejrCf0bKqq6q2fuMV1JJSkkkklP/9L1VVMzqvTcBzWZmTXQ94Ja17oJA0narao9Q6L0/qNtduWxz31Ahm2x7IBIcdKns/dSU3ZCFbl4tNjarbWV2OY+1rXEAlle31rNfzKvUr3rN/5p9D2Gs0vdUTuFTrrSwO2+gy1jHWbWW1U/o6LmfpaP0fpfzbFas6L067Grxchjsmqmz1WevY+126XH3WXPfY9nvcz0nu9L0v0X82kpN+0MHZTZ67NmQ3fS7cPe0M9cuZ/J9H9Ii1W13VstqcH12ND2OBkFpEtc371ls+qvRaxtqrtrbuc7ay+5o3PG2x3tt/PZ+jf/AMH+jQsz6q4DqLXYjHDMFRZRZbdcQIH6Kp7hY5/2djvo0/pKav5z0ElOvk5WPiUOyMmxtVLI3WOMASdrf85yjiZ2HmsdZiXMvYxxY5zCDDhq5h/le5UemdBpxcGmnJc+65vpPsPqWGv1anes19FW5tVP6V3v9Gmn1/8ADVqLvqr0Qua8VWMfWxtbLGXWteGsr+zMa2xlrXt/Qex/+l/wqSnWkffwoW5FFOz1bGs9V4rrkxueZitv8r2rL/5p9DDq3MpfWaCTjiu61gqLv5z7OK7W+h6n+EbV9NJn1T6HW5jqqrKnVbvSNd1rNm7Wz0fTsb6LXx9GpJTr7mggEiSYGvJ5j8FVyuq9Ow7mUZOQyq2wAsY4wSCfTb/01S/5pdEG0Cq1oZYLmBt9zQLQNn2hrGWtZ6+3/Dfzit29Hwb8WrFuFltVJJYX3WuedwdW/wBS51nrW767bK/0j/oJKbkiY7nhNuaIkj3GG68nmB/mrKH1W6M21lrK7a7KgW0uZfc01tP+Co2Wt9GrX+aq/Rph9U+hgMDKbKm1OFlbK77mNbYG+l67K67Ws9fZ/htvqf4T+cSU6tltVVb7bHtZXWC6x7iA1rRq5z3H6LWpy9gkFwBaNzpPA19x/wA1ZX/NToQ3FtDmusDm2ubbYDY18erXe5tn6au2N1tdn84k/wCq3SLHWusbe92Qz073OycgmxkFvpWTd7q/d9BJTqC2o2OqD2mxjQ97JG4NcXBj3N+k1r/Ts2f8WpbmwTIgcrJs+qvRrWOZay57Xtax7XX3EOaw7qa3D1foUPc59DP8A/8Amkj9Vegw4MxvR3tNbzVZZWXMcGsspe6l7N9VmzdYz/CW/pv51JTrAgiRqDwU6q4PTsbAaWY5t2ENAbZbZY1oboxtTbn2Nqb/AMUrSSn/2QA4QklNBCEAAAAAAFUAAAABAQAAAA8AQQBkAG8AYgBlACAAUABoAG8AdABvAHMAaABvAHAAAAATAEEAZABvAGIAZQAgAFAAaABvAHQAbwBzAGgAbwBwACAAQwBTADQAAAABADhCSU0EBgAAAAAABwAIAAAAAQEA/+Emy2h0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC8APD94cGFja2V0IGJlZ2luPSLvu78iIGlkPSJXNU0wTXBDZWhpSHpyZVN6TlRjemtjOWQiPz4NCjx4OnhtcG1ldGEgeG1sbnM6eD0iYWRvYmU6bnM6bWV0YS8iIHg6eG1wdGs9IkFkb2JlIFhNUCBDb3JlIDQuMi4yLWMwNjMgNTMuMzUyNjI0LCAyMDA4LzA3LzMwLTE4OjA1OjQxICAgICAgICAiPg0KCTxyZGY6UkRGIHhtbG5zOnJkZj0iaHR0cDovL3d3dy53My5vcmcvMTk5OS8wMi8yMi1yZGYtc3ludGF4LW5zIyI+DQoJCTxyZGY6RGVzY3JpcHRpb24gcmRmOmFib3V0PSIiIHhtbG5zOnhtcD0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wLyIgeG1sbnM6ZGM9Imh0dHA6Ly9wdXJsLm9yZy9kYy9lbGVtZW50cy8xLjEvIiB4bWxuczp4bXBNTT0iaHR0cDovL25zLmFkb2JlLmNvbS94YXAvMS4wL21tLyIgeG1sbnM6c3RFdnQ9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZUV2ZW50IyIgeG1sbnM6c3RSZWY9Imh0dHA6Ly9ucy5hZG9iZS5jb20veGFwLzEuMC9zVHlwZS9SZXNvdXJjZVJlZiMiIHhtbG5zOnRpZmY9Imh0dHA6Ly9ucy5hZG9iZS5jb20vdGlmZi8xLjAvIiB4bWxuczpleGlmPSJodHRwOi8vbnMuYWRvYmUuY29tL2V4aWYvMS4wLyIgeG1sbnM6cGhvdG9zaG9wPSJodHRwOi8vbnMuYWRvYmUuY29tL3Bob3Rvc2hvcC8xLjAvIiB4bXA6Q3JlYXRvclRvb2w9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiB4bXA6Q3JlYXRlRGF0ZT0iMTk2OS0xMi0zMVQxNzoyMDo0OC0wNzowMCIgeG1wOk1ldGFkYXRhRGF0ZT0iMTk2OS0xMi0zMVQxOToxODo1Ni0wNzowMCIgeG1wOk1vZGlmeURhdGU9IjE5NjktMTItMzFUMTk6MTg6NTYtMDc6MDAiIGRjOmZvcm1hdD0iaW1hZ2UvanBlZyIgeG1wTU06SW5zdGFuY2VJRD0ieG1wLmlpZDpFRkFDNDE0MTIwMEQxMTY4QUZGRDlDRDRERTlBNUM0OSIgeG1wTU06RG9jdW1lbnRJRD0ieG1wLmRpZDo3NDExN0ZFMzIwMDcxMTY4QjM0QkNGOTMwRjc1QURDQyIgeG1wTU06T3JpZ2luYWxEb2N1bWVudElEPSJ4bXAuZGlkOjc0MTE3RkUzMjAwNzExNjhCMzRCQ0Y5MzBGNzVBRENDIiB0aWZmOk9yaWVudGF0aW9uPSIxIiB0aWZmOlhSZXNvbHV0aW9uPSIzMDAwMDAwLzEwMDAwIiB0aWZmOllSZXNvbHV0aW9uPSIzMDAwMDAwLzEwMDAwIiB0aWZmOlJlc29sdXRpb25Vbml0PSIyIiB0aWZmOk5hdGl2ZURpZ2VzdD0iMjU2LDI1NywyNTgsMjU5LDI2MiwyNzQsMjc3LDI4NCw1MzAsNTMxLDI4MiwyODMsMjk2LDMwMSwzMTgsMzE5LDUyOSw1MzIsMzA2LDI3MCwyNzEsMjcyLDMwNSwzMTUsMzM0MzI7QkQ1Q0FGQ0NEN0U0MUU3MjRFMUFEMzk2ODFFOTJEQ0IiIGV4aWY6UGl4ZWxYRGltZW5zaW9uPSI2MDAwIiBleGlmOlBpeGVsWURpbWVuc2lvbj0iMjQxOCIgZXhpZjpDb2xvclNwYWNlPSIxIiBleGlmOk5hdGl2ZURpZ2VzdD0iMzY4NjQsNDA5NjAsNDA5NjEsMzcxMjEsMzcxMjIsNDA5NjIsNDA5NjMsMzc1MTAsNDA5NjQsMzY4NjcsMzY4NjgsMzM0MzQsMzM0MzcsMzQ4NTAsMzQ4NTIsMzQ4NTUsMzQ4NTYsMzczNzcsMzczNzgsMzczNzksMzczODAsMzczODEsMzczODIsMzczODMsMzczODQsMzczODUsMzczODYsMzczOTYsNDE0ODMsNDE0ODQsNDE0ODYsNDE0ODcsNDE0ODgsNDE0OTIsNDE0OTMsNDE0OTUsNDE3MjgsNDE3MjksNDE3MzAsNDE5ODUsNDE5ODYsNDE5ODcsNDE5ODgsNDE5ODksNDE5OTAsNDE5OTEsNDE5OTIsNDE5OTMsNDE5OTQsNDE5OTUsNDE5OTYsNDIwMTYsMCwyLDQsNSw2LDcsOCw5LDEwLDExLDEyLDEzLDE0LDE1LDE2LDE3LDE4LDIwLDIyLDIzLDI0LDI1LDI2LDI3LDI4LDMwOzk5RDZCQkIxQjFGMzQ4RTJBREQ3MEEyMzlDM0Q3NzQ0IiBwaG90b3Nob3A6Q29sb3JNb2RlPSIzIiBwaG90b3Nob3A6SUNDUHJvZmlsZT0ic1JHQiBJRUM2MTk2Ni0yLjEiPg0KCQkJPHhtcE1NOkhpc3Rvcnk+DQoJCQkJPHJkZjpTZXE+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjcmVhdGVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjc0MTE3RkUzMjAwNzExNjhCMzRCQ0Y5MzBGNzVBRENDIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE3OjIwOjQ4LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NzQxMTdGRTQyMDA3MTE2OEIzNEJDRjkzMEY3NUFEQ0MiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTc6MzM6MDItMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NDExN0ZFNTIwMDcxMTY4QjM0QkNGOTMwRjc1QURDQyIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxNzozMzowMi0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjc0MTE3RkU2MjAwNzExNjhCMzRCQ0Y5MzBGNzVBRENDIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE3OjM2OjI3LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NTc1MDJDNjAyMDBEMTE2OEIzNEJDRjkzMEY3NUFEQ0MiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTg6MDM6MTctMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjb252ZXJ0ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImZyb20gYXBwbGljYXRpb24vdm5kLmFkb2JlLnBob3Rvc2hvcCB0byBpbWFnZS9qcGVnIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJkZXJpdmVkIiBzdEV2dDpwYXJhbWV0ZXJzPSJjb252ZXJ0ZWQgZnJvbSBhcHBsaWNhdGlvbi92bmQuYWRvYmUucGhvdG9zaG9wIHRvIGltYWdlL2pwZWciLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjU3NTAyQzYxMjAwRDExNjhCMzRCQ0Y5MzBGNzVBRENDIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE4OjAzOjE3LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NTc1MDJDNjQyMDBEMTE2OEIzNEJDRjkzMEY3NUFEQ0MiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTg6MTU6MDItMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJjb252ZXJ0ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImZyb20gaW1hZ2UvanBlZyB0byBhcHBsaWNhdGlvbi92bmQuYWRvYmUucGhvdG9zaG9wIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJkZXJpdmVkIiBzdEV2dDpwYXJhbWV0ZXJzPSJjb252ZXJ0ZWQgZnJvbSBpbWFnZS9qcGVnIHRvIGFwcGxpY2F0aW9uL3ZuZC5hZG9iZS5waG90b3Nob3AiLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjU3NTAyQzY1MjAwRDExNjhCMzRCQ0Y5MzBGNzVBRENDIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE4OjE1OjAyLTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NzQxMTdGRDkyMDA3MTE2OEI0RjI4OEFERUM2NkM1QzIiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTc6MTA6NDYtMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NDExN0ZEQTIwMDcxMTY4QjRGMjg4QURFQzY2QzVDMiIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxNzoxMDo0Ni0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjc0MTE3RkRCMjAwNzExNjhCNEYyODhBREVDNjZDNUMyIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE3OjI3OjM3LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NzQxMTdGREMyMDA3MTE2OEI0RjI4OEFERUM2NkM1QzIiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTc6Mzk6NTItMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NDExN0ZERDIwMDcxMTY4QjRGMjg4QURFQzY2QzVDMiIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxNzo0MDowNS0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjc0MTE3RkRFMjAwNzExNjhCNEYyODhBREVDNjZDNUMyIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE3OjQwOjA1LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6NzQxMTdGREYyMDA3MTE2OEI0RjI4OEFERUM2NkM1QzIiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTc6NDc6MzUtMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDo3NDExN0ZFMDIwMDcxMTY4QjRGMjg4QURFQzY2QzVDMiIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxNzo0OTowNi0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjc0MTE3RkUxMjAwNzExNjhCNEYyODhBREVDNjZDNUMyIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE3OjQ5OjA2LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6MENEMjRFOTcyMDE3MTE2OEI0RjI4OEFERUM2NkM1QzIiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTk6MTg6NDQtMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDowQ0QyNEU5ODIwMTcxMTY4QjRGMjg4QURFQzY2QzVDMiIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxOToxODo0NC0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOjBDRDI0RTlBMjAxNzExNjhCNEYyODhBREVDNjZDNUMyIiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE5OjI0OjUxLTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6MENEMjRFOUQyMDE3MTE2OEI0RjI4OEFERUM2NkM1QzIiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTk6MzQ6MDEtMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDpFOTExQzZCMTIwMEMxMTY4QUZGRDlDRDRERTlBNUM0OSIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxOToxNzo0MS0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249ImNvbnZlcnRlZCIgc3RFdnQ6cGFyYW1ldGVycz0iZnJvbSBhcHBsaWNhdGlvbi92bmQuYWRvYmUucGhvdG9zaG9wIHRvIGltYWdlL2pwZWciLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249ImRlcml2ZWQiIHN0RXZ0OnBhcmFtZXRlcnM9ImNvbnZlcnRlZCBmcm9tIGFwcGxpY2F0aW9uL3ZuZC5hZG9iZS5waG90b3Nob3AgdG8gaW1hZ2UvanBlZyIvPg0KCQkJCQk8cmRmOmxpIHN0RXZ0OmFjdGlvbj0ic2F2ZWQiIHN0RXZ0Omluc3RhbmNlSUQ9InhtcC5paWQ6RTkxMUM2QjIyMDBDMTE2OEFGRkQ5Q0Q0REU5QTVDNDkiIHN0RXZ0OndoZW49IjE5NjktMTItMzFUMTk6MTc6NDEtMDc6MDAiIHN0RXZ0OnNvZnR3YXJlQWdlbnQ9IkFkb2JlIFBob3Rvc2hvcCBDUzQgTWFjaW50b3NoIiBzdEV2dDpjaGFuZ2VkPSIvIi8+DQoJCQkJCTxyZGY6bGkgc3RFdnQ6YWN0aW9uPSJzYXZlZCIgc3RFdnQ6aW5zdGFuY2VJRD0ieG1wLmlpZDpFRkFDNDE0MDIwMEQxMTY4QUZGRDlDRDRERTlBNUM0OSIgc3RFdnQ6d2hlbj0iMTk2OS0xMi0zMVQxOToxODo1Ni0wNzowMCIgc3RFdnQ6c29mdHdhcmVBZ2VudD0iQWRvYmUgUGhvdG9zaG9wIENTNCBNYWNpbnRvc2giIHN0RXZ0OmNoYW5nZWQ9Ii8iLz4NCgkJCQkJPHJkZjpsaSBzdEV2dDphY3Rpb249InNhdmVkIiBzdEV2dDppbnN0YW5jZUlEPSJ4bXAuaWlkOkVGQUM0MTQxMjAwRDExNjhBRkZEOUNENERFOUE1QzQ5IiBzdEV2dDp3aGVuPSIxOTY5LTEyLTMxVDE5OjE4OjU2LTA3OjAwIiBzdEV2dDpzb2Z0d2FyZUFnZW50PSJBZG9iZSBQaG90b3Nob3AgQ1M0IE1hY2ludG9zaCIgc3RFdnQ6Y2hhbmdlZD0iLyIvPg0KCQkJCTwvcmRmOlNlcT4NCgkJCTwveG1wTU06SGlzdG9yeT4NCgkJCTx4bXBNTTpEZXJpdmVkRnJvbSBzdFJlZjppbnN0YW5jZUlEPSJ4bXAuaWlkOkU5MTFDNkIxMjAwQzExNjhBRkZEOUNENERFOUE1QzQ5IiBzdFJlZjpkb2N1bWVudElEPSJ4bXAuZGlkOjc0MTE3RkUzMjAwNzExNjhCMzRCQ0Y5MzBGNzVBRENDIiBzdFJlZjpvcmlnaW5hbERvY3VtZW50SUQ9InhtcC5kaWQ6NzQxMTdGRTMyMDA3MTE2OEIzNEJDRjkzMEY3NUFEQ0MiLz4NCgkJPC9yZGY6RGVzY3JpcHRpb24+DQoJPC9yZGY6UkRGPg0KPC94OnhtcG1ldGE+DQogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgCiAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAKICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgIAogICAgICAgICA8P3hwYWNrZXQgZW5kPSd3Jz8+/+IMWElDQ19QUk9GSUxFAAEBAAAMSExpbm8CEAAAbW50clJHQiBYWVogB84AAgAJAAYAMQAAYWNzcE1TRlQAAAAASUVDIHNSR0IAAAAAAAAAAAAAAAEAAPbWAAEAAAAA0y1IUCAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARY3BydAAAAVAAAAAzZGVzYwAAAYQAAABsd3RwdAAAAfAAAAAUYmtwdAAAAgQAAAAUclhZWgAAAhgAAAAUZ1hZWgAAAiwAAAAUYlhZWgAAAkAAAAAUZG1uZAAAAlQAAABwZG1kZAAAAsQAAACIdnVlZAAAA0wAAACGdmlldwAAA9QAAAAkbHVtaQAAA/gAAAAUbWVhcwAABAwAAAAkdGVjaAAABDAAAAAMclRSQwAABDwAAAgMZ1RSQwAABDwAAAgMYlRSQwAABDwA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" alt="Sun Valley Mercedes Transmissions" style="max-width:320px;width:90%;height:auto;margin-bottom:8px;" />
+    </div>
+    <h1>Transmission Number Lookup<br><span>All Models &amp; Years</span></h1>
+    <div class="header-rule"></div>
+  </header>
+
+  <div class="input-section">
+    <label class="input-label" for="vinInput"><span style="color:#1a2a6a;font-weight:600;">Enter VIN — First 6 Characters</span></label>
+    <div class="vin-input-wrap">
+      <input id="vinInput" type="text" maxlength="17" placeholder="e.g. WDBUF5" autocomplete="off" autocorrect="off" spellcheck="false"/>
+      <button class="decode-btn" onclick="decodeVIN()">Decode</button>
+    </div>
+    <div class="vin-counter">
+      <span style="color:#1a2a6a;font-weight:600;">Dropdown list will be displayed. Choose the appropriate transmission from the list.</span>
+      <span><span id="charCount">0</span> / 17</span>
+    </div>
+    <div class="error-msg" id="errorMsg"></div>
+
+    <div class="search-divider"><span>&mdash; or search by year / model &mdash;</span></div>
+    <label class="input-label"><span style="color:#1a2a6a;font-weight:600;">Select Year / Model</span></label>
+    <div class="model-input-wrap">
+      <select id="modelSelect">
+        <option value="">&mdash; Choose a model &mdash;</option>
+<option value="1010 E350 4Matic">1010 E350 4Matic</option>
+<option value="1959 300d">1959 300d</option>
+<option value="1960 300d">1960 300d</option>
+<option value="1963 220S">1963 220S</option>
+<option value="1963 300SE/C">1963 300SE/C</option>
+<option value="1964 220SE">1964 220SE</option>
+<option value="1964 230SL">1964 230SL</option>
+<option value="1965 220S">1965 220S</option>
+<option value="1965 220SE">1965 220SE</option>
+<option value="1965 230SL">1965 230SL</option>
+<option value="1965 300SE/C">1965 300SE/C</option>
+<option value="1966 230">1966 230</option>
+<option value="1966 230SL">1966 230SL</option>
+<option value="1966 250SE">1966 250SE</option>
+<option value="1966 300SE">1966 300SE</option>
+<option value="1967 230">1967 230</option>
+<option value="1967 250S">1967 250S</option>
+<option value="1967 250SE/C">1967 250SE/C</option>
+<option value="1967 250SL">1967 250SL</option>
+<option value="1968 280S">1968 280S</option>
+<option value="1968 280SE">1968 280SE</option>
+<option value="1968 280SL">1968 280SL</option>
+<option value="1968 300SEL 6">1968 300SEL 6</option>
+<option value="1969 230">1969 230</option>
+<option value="1969 280SE">1969 280SE</option>
+<option value="1969 280SE/C">1969 280SE/C</option>
+<option value="1969 280SL">1969 280SL</option>
+<option value="1969 300SEL">1969 300SEL</option>
+<option value="1969 300SEL 6">1969 300SEL 6</option>
+<option value="1970 250">1970 250</option>
+<option value="1970 250C">1970 250C</option>
+<option value="1970 280S">1970 280S</option>
+<option value="1970 280SE">1970 280SE</option>
+<option value="1970 280SL">1970 280SL</option>
+<option value="1971 250">1971 250</option>
+<option value="1971 250C">1971 250C</option>
+<option value="1971 280SE">1971 280SE</option>
+<option value="1971 280SE 3.5">1971 280SE 3.5</option>
+<option value="1971 280SL">1971 280SL</option>
+<option value="1971 300SEL 6.3">1971 300SEL 6.3</option>
+<option value="1971 600">1971 600</option>
+<option value="1972 250">1972 250</option>
+<option value="1972 250C">1972 250C</option>
+<option value="1972 280SE4.5">1972 280SE4.5</option>
+<option value="1972 300SEL 4.5">1972 300SEL 4.5</option>
+<option value="1972 350SL">1972 350SL</option>
+<option value="1973 280">1973 280</option>
+<option value="1973 280C">1973 280C</option>
+<option value="1973 350SL">1973 350SL</option>
+<option value="1973 450SE">1973 450SE</option>
+<option value="1973 450SEL">1973 450SEL</option>
+<option value="1973 450SL">1973 450SL</option>
+<option value="1974 280">1974 280</option>
+<option value="1974 280C">1974 280C</option>
+<option value="1974 450SEL">1974 450SEL</option>
+<option value="1974 450SL">1974 450SL</option>
+<option value="1974 450SLC">1974 450SLC</option>
+<option value="1975 240D">1975 240D</option>
+<option value="1975 280">1975 280</option>
+<option value="1975 300D">1975 300D</option>
+<option value="1975 450SL">1975 450SL</option>
+<option value="1976 280S">1976 280S</option>
+<option value="1976 300D">1976 300D</option>
+<option value="1976 450SL">1976 450SL</option>
+<option value="1976 450SLC">1976 450SLC</option>
+<option value="1977 230">1977 230</option>
+<option value="1977 240D">1977 240D</option>
+<option value="1977 280SE">1977 280SE</option>
+<option value="1977 300D">1977 300D</option>
+<option value="1977 450SL">1977 450SL</option>
+<option value="1978 240D">1978 240D</option>
+<option value="1978 280E">1978 280E</option>
+<option value="1978 300D">1978 300D</option>
+<option value="1978 300SD">1978 300SD</option>
+<option value="1978 450SEL">1978 450SEL</option>
+<option value="1978 450SL">1978 450SL</option>
+<option value="1979 240D">1979 240D</option>
+<option value="1979 300D">1979 300D</option>
+<option value="1979 300SD">1979 300SD</option>
+<option value="1979 300TD">1979 300TD</option>
+<option value="1979 450SL">1979 450SL</option>
+<option value="1979 450SLC">1979 450SLC</option>
+<option value="1980 240D">1980 240D</option>
+<option value="1980 280CE">1980 280CE</option>
+<option value="1980 300CD">1980 300CD</option>
+<option value="1980 300D">1980 300D</option>
+<option value="1980 300SD">1980 300SD</option>
+<option value="1980 450SL">1980 450SL</option>
+<option value="1981 240D">1981 240D</option>
+<option value="1981 280SE">1981 280SE</option>
+<option value="1981 300D">1981 300D</option>
+<option value="1981 300SD">1981 300SD</option>
+<option value="1981 300TD">1981 300TD</option>
+<option value="1981 380SL">1981 380SL</option>
+<option value="1981 500SL">1981 500SL</option>
+<option value="1981 Porsche 928">1981 Porsche 928</option>
+<option value="1982 240D">1982 240D</option>
+<option value="1982 280SE">1982 280SE</option>
+<option value="1982 300CD">1982 300CD</option>
+<option value="1982 300D">1982 300D</option>
+<option value="1982 300SD">1982 300SD</option>
+<option value="1982 300TD">1982 300TD</option>
+<option value="1982 380SL">1982 380SL</option>
+<option value="1983 240D">1983 240D</option>
+<option value="1983 300CD">1983 300CD</option>
+<option value="1983 300D">1983 300D</option>
+<option value="1983 300SD">1983 300SD</option>
+<option value="1983 300TD">1983 300TD</option>
+<option value="1983 380SL">1983 380SL</option>
+<option value="1983 500SEL">1983 500SEL</option>
+<option value="1983 928">1983 928</option>
+<option value="1984 230GE">1984 230GE</option>
+<option value="1984 280GE">1984 280GE</option>
+<option value="1984 300CD">1984 300CD</option>
+<option value="1984 300D">1984 300D</option>
+<option value="1984 300SD">1984 300SD</option>
+<option value="1984 300TD">1984 300TD</option>
+<option value="1984 300d Euro">1984 300d Euro</option>
+<option value="1984 380SL">1984 380SL</option>
+<option value="1984 500SE/C">1984 500SE/C</option>
+<option value="1984 500SL">1984 500SL</option>
+<option value="1985 190D 2.2">1985 190D 2.2</option>
+<option value="1985 190E 2.3">1985 190E 2.3</option>
+<option value="1985 280GE">1985 280GE</option>
+<option value="1985 300CD">1985 300CD</option>
+<option value="1985 300D">1985 300D</option>
+<option value="1985 300SD">1985 300SD</option>
+<option value="1985 300TD">1985 300TD</option>
+<option value="1985 380SE/C">1985 380SE/C</option>
+<option value="1985 380SL">1985 380SL</option>
+<option value="1985 500SE/C">1985 500SE/C</option>
+<option value="1985 500SEL">1985 500SEL</option>
+<option value="1985 500SL">1985 500SL</option>
+<option value="1986 190E">1986 190E</option>
+<option value="1986 190E 16V">1986 190E 16V</option>
+<option value="1986 190E 2.3">1986 190E 2.3</option>
+<option value="1986 300E">1986 300E</option>
+<option value="1986 300SDL">1986 300SDL</option>
+<option value="1986 420SEL">1986 420SEL</option>
+<option value="1986 560SE/C">1986 560SE/C</option>
+<option value="1986 560SEC">1986 560SEC</option>
+<option value="1986 560SEL">1986 560SEL</option>
+<option value="1986 560SL">1986 560SL</option>
+<option value="1986 928">1986 928</option>
+<option value="1987 190D 2.5">1987 190D 2.5</option>
+<option value="1987 260E">1987 260E</option>
+<option value="1987 280 GE">1987 280 GE</option>
+<option value="1987 300D">1987 300D</option>
+<option value="1987 300E">1987 300E</option>
+<option value="1987 300SDL">1987 300SDL</option>
+<option value="1987 300TD">1987 300TD</option>
+<option value="1987 420SEL">1987 420SEL</option>
+<option value="1987 560SE/C">1987 560SE/C</option>
+<option value="1987 560SEL">1987 560SEL</option>
+<option value="1987 560SL">1987 560SL</option>
+<option value="1988 190E 2.6">1988 190E 2.6</option>
+<option value="1988 260E">1988 260E</option>
+<option value="1988 300E">1988 300E</option>
+<option value="1988 300SE">1988 300SE</option>
+<option value="1988 300SEL">1988 300SEL</option>
+<option value="1988 420SEL">1988 420SEL</option>
+<option value="1988 560SE/C">1988 560SE/C</option>
+<option value="1988 560SEL">1988 560SEL</option>
+<option value="1988 560SL">1988 560SL</option>
+<option value="1988 928">1988 928</option>
+<option value="1989 190D 2.5">1989 190D 2.5</option>
+<option value="1989 190E 2.6">1989 190E 2.6</option>
+<option value="1989 260E">1989 260E</option>
+<option value="1989 300E">1989 300E</option>
+<option value="1989 300SE">1989 300SE</option>
+<option value="1989 300SEL">1989 300SEL</option>
+<option value="1989 300TE">1989 300TE</option>
+<option value="1989 420SEL">1989 420SEL</option>
+<option value="1989 560SE/C">1989 560SE/C</option>
+<option value="1989 560SEL">1989 560SEL</option>
+<option value="1989 560SL">1989 560SL</option>
+<option value="1990 190E 2.6">1990 190E 2.6</option>
+<option value="1990 300D 2.5">1990 300D 2.5</option>
+<option value="1990 300E">1990 300E</option>
+<option value="1990 300E 4 MATIC">1990 300E 4 MATIC</option>
+<option value="1990 300SE">1990 300SE</option>
+<option value="1990 300SEL">1990 300SEL</option>
+<option value="1990 300SL">1990 300SL</option>
+<option value="1990 300TE">1990 300TE</option>
+<option value="1990 350SDL">1990 350SDL</option>
+<option value="1990 420SEL">1990 420SEL</option>
+<option value="1990 560SE/C">1990 560SE/C</option>
+<option value="1990 560SEL">1990 560SEL</option>
+<option value="1991 190E 2.6">1991 190E 2.6</option>
+<option value="1991 300CE">1991 300CE</option>
+<option value="1991 300D 2.5">1991 300D 2.5</option>
+<option value="1991 300E">1991 300E</option>
+<option value="1991 300E 2.6">1991 300E 2.6</option>
+<option value="1991 300E 4MATIC TRANSFER CASE">1991 300E 4MATIC TRANSFER CASE</option>
+<option value="1991 300GE">1991 300GE</option>
+<option value="1991 300SEL">1991 300SEL</option>
+<option value="1991 300SL">1991 300SL</option>
+<option value="1991 300TE">1991 300TE</option>
+<option value="1991 300TE 4">1991 300TE 4</option>
+<option value="1991 300TE 4 MATIC">1991 300TE 4 MATIC</option>
+<option value="1991 350SD">1991 350SD</option>
+<option value="1991 350SDL">1991 350SDL</option>
+<option value="1991 420SEL">1991 420SEL</option>
+<option value="1991 500SL">1991 500SL</option>
+<option value="1991 560SE/C">1991 560SE/C</option>
+<option value="1991 560SEL">1991 560SEL</option>
+<option value="1992 190E 2.3">1992 190E 2.3</option>
+<option value="1992 190E 2.6">1992 190E 2.6</option>
+<option value="1992 250D">1992 250D</option>
+<option value="1992 300D 2.5">1992 300D 2.5</option>
+<option value="1992 300E">1992 300E</option>
+<option value="1992 300E 2.6">1992 300E 2.6</option>
+<option value="1992 300E 4MATIC TRANSFER CASE">1992 300E 4MATIC TRANSFER CASE</option>
+<option value="1992 300GE">1992 300GE</option>
+<option value="1992 300SD">1992 300SD</option>
+<option value="1992 300SE">1992 300SE</option>
+<option value="1992 300SL">1992 300SL</option>
+<option value="1992 300TE">1992 300TE</option>
+<option value="1992 300TE 4MATIC">1992 300TE 4MATIC</option>
+<option value="1992 300TE 4MATIC TRANSFER CASE">1992 300TE 4MATIC TRANSFER CASE</option>
+<option value="1992 400E">1992 400E</option>
+<option value="1992 400SE">1992 400SE</option>
+<option value="1992 500E">1992 500E</option>
+<option value="1992 500SEL">1992 500SEL</option>
+<option value="1992 500SL">1992 500SL</option>
+<option value="1992 G350">1992 G350</option>
+<option value="1993 190E 2.6">1993 190E 2.6</option>
+<option value="1993 300CE">1993 300CE</option>
+<option value="1993 300CE Cabriolet">1993 300CE Cabriolet</option>
+<option value="1993 300D 2.5">1993 300D 2.5</option>
+<option value="1993 300E">1993 300E</option>
+<option value="1993 300E 2.8">1993 300E 2.8</option>
+<option value="1993 300GE">1993 300GE</option>
+<option value="1993 300SD">1993 300SD</option>
+<option value="1993 300SE">1993 300SE</option>
+<option value="1993 300SL">1993 300SL</option>
+<option value="1993 300TE">1993 300TE</option>
+<option value="1993 300TE 4MATIC">1993 300TE 4MATIC</option>
+<option value="1993 300TE 4MATIC TRANSFER CASE">1993 300TE 4MATIC TRANSFER CASE</option>
+<option value="1993 400E">1993 400E</option>
+<option value="1993 400SEL">1993 400SEL</option>
+<option value="1993 500E">1993 500E</option>
+<option value="1993 500SL">1993 500SL</option>
+<option value="1993 600SE/C">1993 600SE/C</option>
+<option value="1993 600SL V-12">1993 600SL V-12</option>
+<option value="1993 E320">1993 E320</option>
+<option value="1994 290GD">1994 290GD</option>
+<option value="1994 420SEL">1994 420SEL</option>
+<option value="1994 500E">1994 500E</option>
+<option value="1994 C220">1994 C220</option>
+<option value="1994 CL500">1994 CL500</option>
+<option value="1994 E320">1994 E320</option>
+<option value="1994 E420">1994 E420</option>
+<option value="1994 E500">1994 E500</option>
+<option value="1994 S 500">1994 S 500</option>
+<option value="1994 S320">1994 S320</option>
+<option value="1994 S420">1994 S420</option>
+<option value="1994 S600">1994 S600</option>
+<option value="1994 SL320">1994 SL320</option>
+<option value="1994 SL500">1994 SL500</option>
+<option value="1994 SL600">1994 SL600</option>
+<option value="1995 500E">1995 500E</option>
+<option value="1995 C220">1995 C220</option>
+<option value="1995 C280">1995 C280</option>
+<option value="1995 C36">1995 C36</option>
+<option value="1995 E300D">1995 E300D</option>
+<option value="1995 E320">1995 E320</option>
+<option value="1995 E420">1995 E420</option>
+<option value="1995 E500">1995 E500</option>
+<option value="1995 G320">1995 G320</option>
+<option value="1995 G350D">1995 G350D</option>
+<option value="1995 S320">1995 S320</option>
+<option value="1995 S420">1995 S420</option>
+<option value="1995 S500">1995 S500</option>
+<option value="1995 S600">1995 S600</option>
+<option value="1995 SL320">1995 SL320</option>
+<option value="1995 SL500">1995 SL500</option>
+<option value="1995 SL600">1995 SL600</option>
+<option value="1996 350GD">1996 350GD</option>
+<option value="1996 C220">1996 C220</option>
+<option value="1996 C230">1996 C230</option>
+<option value="1996 C280">1996 C280</option>
+<option value="1996 S320">1996 S320</option>
+<option value="1996 SL320">1996 SL320</option>
+<option value="1996 SL500">1996 SL500</option>
+<option value="1996 s600">1996 s600</option>
+<option value="1997 C230">1997 C230</option>
+<option value="1997 C280">1997 C280</option>
+<option value="1997 E300D">1997 E300D</option>
+<option value="1997 E320">1997 E320</option>
+<option value="1997 E420">1997 E420</option>
+<option value="1997 S320">1997 S320</option>
+<option value="1997 S420">1997 S420</option>
+<option value="1997 S500">1997 S500</option>
+<option value="1997 SL500">1997 SL500</option>
+<option value="1997 SL600">1997 SL600</option>
+<option value="1998 C230">1998 C230</option>
+<option value="1998 C43">1998 C43</option>
+<option value="1998 E300D">1998 E300D</option>
+<option value="1998 E320">1998 E320</option>
+<option value="1998 E320 4 MATIC">1998 E320 4 MATIC</option>
+<option value="1998 E420">1998 E420</option>
+<option value="1998 E430">1998 E430</option>
+<option value="1998 E55 AMG">1998 E55 AMG</option>
+<option value="1998 ML 320">1998 ML 320</option>
+<option value="1998 S320">1998 S320</option>
+<option value="1998 S420">1998 S420</option>
+<option value="1998 S500">1998 S500</option>
+<option value="1998 SL 500">1998 SL 500</option>
+<option value="1998 SL600">1998 SL600</option>
+<option value="1998 SLK230">1998 SLK230</option>
+<option value="1999 C280">1999 C280</option>
+<option value="1999 C43">1999 C43</option>
+<option value="1999 CL500">1999 CL500</option>
+<option value="1999 CLK320">1999 CLK320</option>
+<option value="1999 CLK430">1999 CLK430</option>
+<option value="1999 E300D">1999 E300D</option>
+<option value="1999 E320">1999 E320</option>
+<option value="1999 E320 4MATIC WAGON">1999 E320 4MATIC WAGON</option>
+<option value="1999 E430">1999 E430</option>
+<option value="1999 G500">1999 G500</option>
+<option value="1999 ML430">1999 ML430</option>
+<option value="1999 S320">1999 S320</option>
+<option value="1999 S420">1999 S420</option>
+<option value="1999 S500">1999 S500</option>
+<option value="1999 SL500">1999 SL500</option>
+<option value="1999 SL600">1999 SL600</option>
+<option value="1999 SLK 230">1999 SLK 230</option>
+<option value="2000 C280">2000 C280</option>
+<option value="2000 E320">2000 E320</option>
+<option value="2000 E320 4 MATIC">2000 E320 4 MATIC</option>
+<option value="2000 E430">2000 E430</option>
+<option value="2000 G500">2000 G500</option>
+<option value="2000 ML320">2000 ML320</option>
+<option value="2000 ML430">2000 ML430</option>
+<option value="2000 S430">2000 S430</option>
+<option value="2000 S500">2000 S500</option>
+<option value="2000 SL500">2000 SL500</option>
+<option value="2000 SL600">2000 SL600</option>
+<option value="2000 cl500">2000 cl500</option>
+<option value="2001 C230">2001 C230</option>
+<option value="2001 CLK55">2001 CLK55</option>
+<option value="2001 E320">2001 E320</option>
+<option value="2001 E320 4Matic">2001 E320 4Matic</option>
+<option value="2001 ML320">2001 ML320</option>
+<option value="2001 S430">2001 S430</option>
+<option value="2001 SLK 320">2001 SLK 320</option>
+<option value="2001 e430">2001 e430</option>
+<option value="2002 C230">2002 C230</option>
+<option value="2002 C230 4Matic">2002 C230 4Matic</option>
+<option value="2002 C32">2002 C32</option>
+<option value="2002 CLK320">2002 CLK320</option>
+<option value="2002 CLK430">2002 CLK430</option>
+<option value="2002 CLK55">2002 CLK55</option>
+<option value="2002 E320">2002 E320</option>
+<option value="2002 E320 4Matic">2002 E320 4Matic</option>
+<option value="2002 E430">2002 E430</option>
+<option value="2002 E55">2002 E55</option>
+<option value="2002 G400 CDI">2002 G400 CDI</option>
+<option value="2002 G500">2002 G500</option>
+<option value="2002 ML500">2002 ML500</option>
+<option value="2002 S430">2002 S430</option>
+<option value="2002 S500">2002 S500</option>
+<option value="2002 S55">2002 S55</option>
+<option value="2002 SL500">2002 SL500</option>
+<option value="2002 Sprinter 2500">2002 Sprinter 2500</option>
+<option value="2003 C230">2003 C230</option>
+<option value="2003 C320">2003 C320</option>
+<option value="2003 CL55">2003 CL55</option>
+<option value="2003 CLK320">2003 CLK320</option>
+<option value="2003 CLK500">2003 CLK500</option>
+<option value="2003 E320">2003 E320</option>
+<option value="2003 E500">2003 E500</option>
+<option value="2003 E55">2003 E55</option>
+<option value="2003 G500">2003 G500</option>
+<option value="2003 G55">2003 G55</option>
+<option value="2003 Jaguar">2003 Jaguar</option>
+<option value="2003 S430">2003 S430</option>
+<option value="2003 S500 4MATIC">2003 S500 4MATIC</option>
+<option value="2003 S55">2003 S55</option>
+<option value="2003 S600">2003 S600</option>
+<option value="2003 SL500">2003 SL500</option>
+<option value="2003 SL55 AMG">2003 SL55 AMG</option>
+<option value="2003 c240">2003 c240</option>
+<option value="2003 ml350">2003 ml350</option>
+<option value="2004 C230">2004 C230</option>
+<option value="2004 C240">2004 C240</option>
+<option value="2004 C320">2004 C320</option>
+<option value="2004 C55">2004 C55</option>
+<option value="2004 CL500">2004 CL500</option>
+<option value="2004 CLK320">2004 CLK320</option>
+<option value="2004 CLK55">2004 CLK55</option>
+<option value="2004 E320">2004 E320</option>
+<option value="2004 E320 4Matic">2004 E320 4Matic</option>
+<option value="2004 E320 CDI">2004 E320 CDI</option>
+<option value="2004 E500">2004 E500</option>
+<option value="2004 E500 4Matic">2004 E500 4Matic</option>
+<option value="2004 E55">2004 E55</option>
+<option value="2004 G500">2004 G500</option>
+<option value="2004 ML350 722.6">2004 ML350 722.6</option>
+<option value="2004 ML500">2004 ML500</option>
+<option value="2004 S430">2004 S430</option>
+<option value="2004 S500">2004 S500</option>
+<option value="2004 S55">2004 S55</option>
+<option value="2004 SL500">2004 SL500</option>
+<option value="2004 Sprinter 2500">2004 Sprinter 2500</option>
+<option value="2004 maybach 57">2004 maybach 57</option>
+<option value="2005 C55 AMG">2005 C55 AMG</option>
+<option value="2005 CL 65">2005 CL 65</option>
+<option value="2005 CL500">2005 CL500</option>
+<option value="2005 CL55">2005 CL55</option>
+<option value="2005 CLK 500">2005 CLK 500</option>
+<option value="2005 CLK 500 9 series">2005 CLK 500 9 series</option>
+<option value="2005 CLK320">2005 CLK320</option>
+<option value="2005 CLS 500">2005 CLS 500</option>
+<option value="2005 CLS 55">2005 CLS 55</option>
+<option value="2005 CLS500">2005 CLS500</option>
+<option value="2005 E320  CDI">2005 E320  CDI</option>
+<option value="2005 E320 CDI">2005 E320 CDI</option>
+<option value="2005 E350">2005 E350</option>
+<option value="2005 E500">2005 E500</option>
+<option value="2005 E55 AMG">2005 E55 AMG</option>
+<option value="2005 G500">2005 G500</option>
+<option value="2005 G55 AMG">2005 G55 AMG</option>
+<option value="2005 ML350">2005 ML350</option>
+<option value="2005 ML500">2005 ML500</option>
+<option value="2005 S430">2005 S430</option>
+<option value="2005 S500">2005 S500</option>
+<option value="2005 S500 4Matic">2005 S500 4Matic</option>
+<option value="2005 S55">2005 S55</option>
+<option value="2005 S600">2005 S600</option>
+<option value="2005 SL 500">2005 SL 500</option>
+<option value="2005 SL500">2005 SL500</option>
+<option value="2005 SL55">2005 SL55</option>
+<option value="2005 SL600">2005 SL600</option>
+<option value="2005 SLK350">2005 SLK350</option>
+<option value="2005 SPRINTER 2500">2005 SPRINTER 2500</option>
+<option value="2005 SPRINTER 3500">2005 SPRINTER 3500</option>
+<option value="2006 C230">2006 C230</option>
+<option value="2006 CL500">2006 CL500</option>
+<option value="2006 CL65">2006 CL65</option>
+<option value="2006 CLK350">2006 CLK350</option>
+<option value="2006 CLK500">2006 CLK500</option>
+<option value="2006 CLS500">2006 CLS500</option>
+<option value="2006 CLS55 AMG">2006 CLS55 AMG</option>
+<option value="2006 E320 CDI">2006 E320 CDI</option>
+<option value="2006 E350">2006 E350</option>
+<option value="2006 E500">2006 E500</option>
+<option value="2006 E55">2006 E55</option>
+<option value="2006 E550">2006 E550</option>
+<option value="2006 GL450">2006 GL450</option>
+<option value="2006 ML350">2006 ML350</option>
+<option value="2006 ML500">2006 ML500</option>
+<option value="2006 R350">2006 R350</option>
+<option value="2006 R500">2006 R500</option>
+<option value="2006 S 430">2006 S 430</option>
+<option value="2006 S430">2006 S430</option>
+<option value="2006 S500">2006 S500</option>
+<option value="2006 S550">2006 S550</option>
+<option value="2006 S600">2006 S600</option>
+<option value="2006 SL 500">2006 SL 500</option>
+<option value="2006 SL55 AMG">2006 SL55 AMG</option>
+<option value="2006 SLK 350">2006 SLK 350</option>
+<option value="2006 SLK280">2006 SLK280</option>
+<option value="2006 SLK300">2006 SLK300</option>
+<option value="2006 SLK350">2006 SLK350</option>
+<option value="2006 SLK55 AMG">2006 SLK55 AMG</option>
+<option value="2006 SPRINTER">2006 SPRINTER</option>
+<option value="2006 SPRINTER 2300">2006 SPRINTER 2300</option>
+<option value="2006 SPRINTER 2500">2006 SPRINTER 2500</option>
+<option value="2006 Sprinter 3500">2006 Sprinter 3500</option>
+<option value="2006 c350">2006 c350</option>
+<option value="2007 C230">2007 C230</option>
+<option value="2007 C280">2007 C280</option>
+<option value="2007 CL500">2007 CL500</option>
+<option value="2007 CL63">2007 CL63</option>
+<option value="2007 CLK350">2007 CLK350</option>
+<option value="2007 CLK500">2007 CLK500</option>
+<option value="2007 CLK63">2007 CLK63</option>
+<option value="2007 CLS 500">2007 CLS 500</option>
+<option value="2007 CLS550">2007 CLS550</option>
+<option value="2007 CLS63">2007 CLS63</option>
+<option value="2007 E320 Diesel">2007 E320 Diesel</option>
+<option value="2007 E350">2007 E350</option>
+<option value="2007 E550">2007 E550</option>
+<option value="2007 E63">2007 E63</option>
+<option value="2007 GL 450">2007 GL 450</option>
+<option value="2007 GL450">2007 GL450</option>
+<option value="2007 ML 350">2007 ML 350</option>
+<option value="2007 ML320 CDI">2007 ML320 CDI</option>
+<option value="2007 ML500">2007 ML500</option>
+<option value="2007 ML63">2007 ML63</option>
+<option value="2007 Porsche 911 4WD">2007 Porsche 911 4WD</option>
+<option value="2007 R320 CDI">2007 R320 CDI</option>
+<option value="2007 R350">2007 R350</option>
+<option value="2007 R500">2007 R500</option>
+<option value="2007 S 65">2007 S 65</option>
+<option value="2007 S430">2007 S430</option>
+<option value="2007 S550">2007 S550</option>
+<option value="2007 S550 4MATIC">2007 S550 4MATIC</option>
+<option value="2007 S600">2007 S600</option>
+<option value="2007 SL 550">2007 SL 550</option>
+<option value="2007 SL55 AMG">2007 SL55 AMG</option>
+<option value="2007 SL550">2007 SL550</option>
+<option value="2007 SLK 280">2007 SLK 280</option>
+<option value="2007 SLK 350">2007 SLK 350</option>
+<option value="2007 Sprinter 2500">2007 Sprinter 2500</option>
+<option value="2007 c300">2007 c300</option>
+<option value="2008 C300">2008 C300</option>
+<option value="2008 C350">2008 C350</option>
+<option value="2008 CL 550">2008 CL 550</option>
+<option value="2008 CLK350">2008 CLK350</option>
+<option value="2008 CLK63">2008 CLK63</option>
+<option value="2008 CLS 550">2008 CLS 550</option>
+<option value="2008 E320 CDI">2008 E320 CDI</option>
+<option value="2008 E350">2008 E350</option>
+<option value="2008 E350 4Matic">2008 E350 4Matic</option>
+<option value="2008 E350 4Matic 722.676">2008 E350 4Matic 722.676</option>
+<option value="2008 E550">2008 E550</option>
+<option value="2008 E63">2008 E63</option>
+<option value="2008 G500">2008 G500</option>
+<option value="2008 G55">2008 G55</option>
+<option value="2008 GL 450">2008 GL 450</option>
+<option value="2008 GL320 CDI">2008 GL320 CDI</option>
+<option value="2008 GL550">2008 GL550</option>
+<option value="2008 ML 320 CDI">2008 ML 320 CDI</option>
+<option value="2008 ML 350 4Matic">2008 ML 350 4Matic</option>
+<option value="2008 ML 550">2008 ML 550</option>
+<option value="2008 ML 63">2008 ML 63</option>
+<option value="2008 Maybach 62S">2008 Maybach 62S</option>
+<option value="2008 R320 CDI 4Matic">2008 R320 CDI 4Matic</option>
+<option value="2008 R350">2008 R350</option>
+<option value="2008 S350">2008 S350</option>
+<option value="2008 S500 4Matic">2008 S500 4Matic</option>
+<option value="2008 S550">2008 S550</option>
+<option value="2008 S550 4matic">2008 S550 4matic</option>
+<option value="2008 S63">2008 S63</option>
+<option value="2008 SPRINTER 2500">2008 SPRINTER 2500</option>
+<option value="2008 Sprinter 3500">2008 Sprinter 3500</option>
+<option value="2008 clk500">2008 clk500</option>
+<option value="2008 cls 63">2008 cls 63</option>
+<option value="2009 C63 AMG">2009 C63 AMG</option>
+<option value="2009 CL550 4Matic">2009 CL550 4Matic</option>
+<option value="2009 CL63">2009 CL63</option>
+<option value="2009 CLK 350">2009 CLK 350</option>
+<option value="2009 CLS550">2009 CLS550</option>
+<option value="2009 E350">2009 E350</option>
+<option value="2009 E500">2009 E500</option>
+<option value="2009 E63">2009 E63</option>
+<option value="2009 G55 AMG">2009 G55 AMG</option>
+<option value="2009 GL320 CDI">2009 GL320 CDI</option>
+<option value="2009 GL450">2009 GL450</option>
+<option value="2009 GL550">2009 GL550</option>
+<option value="2009 ML350">2009 ML350</option>
+<option value="2009 ML350 CDI">2009 ML350 CDI</option>
+<option value="2009 S550">2009 S550</option>
+<option value="2009 S550 4Matic">2009 S550 4Matic</option>
+<option value="2009 S63 AMG">2009 S63 AMG</option>
+<option value="2009 SL550">2009 SL550</option>
+<option value="2009 SL63 AMG">2009 SL63 AMG</option>
+<option value="2009 SLK350">2009 SLK350</option>
+<option value="2009 Sprinter 2500">2009 Sprinter 2500</option>
+<option value="2009 c300">2009 c300</option>
+<option value="2009 c300 4Matic">2009 c300 4Matic</option>
+<option value="2010 C300 4Matic">2010 C300 4Matic</option>
+<option value="2010 C63">2010 C63</option>
+<option value="2010 CL 500 4Matic">2010 CL 500 4Matic</option>
+<option value="2010 CLS 500">2010 CLS 500</option>
+<option value="2010 E350">2010 E350</option>
+<option value="2010 E350 4Matic">2010 E350 4Matic</option>
+<option value="2010 E550">2010 E550</option>
+<option value="2010 E550 4Matic">2010 E550 4Matic</option>
+<option value="2010 E63 AMG">2010 E63 AMG</option>
+<option value="2010 G500">2010 G500</option>
+<option value="2010 G55">2010 G55</option>
+<option value="2010 GL 450">2010 GL 450</option>
+<option value="2010 GLK 350">2010 GLK 350</option>
+<option value="2010 GLK 350 4Matic">2010 GLK 350 4Matic</option>
+<option value="2010 ML 350 Diesel">2010 ML 350 Diesel</option>
+<option value="2010 ML350">2010 ML350</option>
+<option value="2010 S500 4Matic">2010 S500 4Matic</option>
+<option value="2010 S550">2010 S550</option>
+<option value="2010 S550 4Matic">2010 S550 4Matic</option>
+<option value="2010 Sprinter">2010 Sprinter</option>
+<option value="2011 C250">2011 C250</option>
+<option value="2011 C300">2011 C300</option>
+<option value="2011 C300 4Matic">2011 C300 4Matic</option>
+<option value="2011 CL63 AMG">2011 CL63 AMG</option>
+<option value="2011 E350">2011 E350</option>
+<option value="2011 E550">2011 E550</option>
+<option value="2011 E550 4Matic">2011 E550 4Matic</option>
+<option value="2011 E63">2011 E63</option>
+<option value="2011 G550">2011 G550</option>
+<option value="2011 GL450">2011 GL450</option>
+<option value="2011 GLK 350">2011 GLK 350</option>
+<option value="2011 ML350">2011 ML350</option>
+<option value="2011 S550">2011 S550</option>
+<option value="2011 S550 4Matic">2011 S550 4Matic</option>
+<option value="2011 SPRINTER">2011 SPRINTER</option>
+<option value="2011 e350 4Matic">2011 e350 4Matic</option>
+<option value="2012 C250">2012 C250</option>
+<option value="2012 C300 4Matic">2012 C300 4Matic</option>
+<option value="2012 C350">2012 C350</option>
+<option value="2012 C350 4Matic">2012 C350 4Matic</option>
+<option value="2012 CLS 500">2012 CLS 500</option>
+<option value="2012 E350 4Matic">2012 E350 4Matic</option>
+<option value="2012 E550 4Matic">2012 E550 4Matic</option>
+<option value="2012 GL550 4Matic">2012 GL550 4Matic</option>
+<option value="2012 GLE350 4Matic">2012 GLE350 4Matic</option>
+<option value="2012 GLK 350">2012 GLK 350</option>
+<option value="2012 ML350">2012 ML350</option>
+<option value="2012 S350 4Matic">2012 S350 4Matic</option>
+<option value="2012 S500">2012 S500</option>
+<option value="2012 SLK350">2012 SLK350</option>
+<option value="2012 Sprinter">2012 Sprinter</option>
+<option value="2012 Sprinter 2500">2012 Sprinter 2500</option>
+<option value="2012 e350">2012 e350</option>
+<option value="2013 C250">2013 C250</option>
+<option value="2013 C300 4Matic">2013 C300 4Matic</option>
+<option value="2013 C350">2013 C350</option>
+<option value="2013 C63">2013 C63</option>
+<option value="2013 E350">2013 E350</option>
+<option value="2013 E350 4matic">2013 E350 4matic</option>
+<option value="2013 G550">2013 G550</option>
+<option value="2013 GL 450 4Matic">2013 GL 450 4Matic</option>
+<option value="2013 GLK 250 4Matic">2013 GLK 250 4Matic</option>
+<option value="2013 GLK 350">2013 GLK 350</option>
+<option value="2013 ML350">2013 ML350</option>
+<option value="2013 S550">2013 S550</option>
+<option value="2013 S550 4Matic">2013 S550 4Matic</option>
+<option value="2013 SL500">2013 SL500</option>
+<option value="2013 glk 4Matic">2013 glk 4Matic</option>
+<option value="2013 sprinter">2013 sprinter</option>
+<option value="2013 sprinter 2500">2013 sprinter 2500</option>
+<option value="2014 C350">2014 C350</option>
+<option value="2014 C350 e">2014 C350 e</option>
+<option value="2014 E350">2014 E350</option>
+<option value="2014 E350 4Matic">2014 E350 4Matic</option>
+<option value="2014 G63 AMG">2014 G63 AMG</option>
+<option value="2014 GLE350">2014 GLE350</option>
+<option value="2014 GLK 250 BlueTEC 4Matic">2014 GLK 250 BlueTEC 4Matic</option>
+<option value="2014 GLK350">2014 GLK350</option>
+<option value="2014 S550">2014 S550</option>
+<option value="2014 S63">2014 S63</option>
+<option value="2014 Sprinter">2014 Sprinter</option>
+<option value="2014 c250">2014 c250</option>
+<option value="2014 c300">2014 c300</option>
+<option value="2015 C400 4Matic">2015 C400 4Matic</option>
+<option value="2015 E350">2015 E350</option>
+<option value="2015 G550">2015 G550</option>
+<option value="2015 GL450">2015 GL450</option>
+<option value="2015 GLA 250 4Matic">2015 GLA 250 4Matic</option>
+<option value="2015 GLK 350 4Matic">2015 GLK 350 4Matic</option>
+<option value="2015 S500 4Matic">2015 S500 4Matic</option>
+<option value="2015 Sprinter 2500">2015 Sprinter 2500</option>
+<option value="2015 Sprinter 3500">2015 Sprinter 3500</option>
+<option value="2016 C300 4Matic">2016 C300 4Matic</option>
+<option value="2016 CLA 250">2016 CLA 250</option>
+<option value="2016 E300">2016 E300</option>
+<option value="2016 G63">2016 G63</option>
+<option value="2016 GLC300">2016 GLC300</option>
+<option value="2016 GLE350">2016 GLE350</option>
+<option value="2016 ML350 4Matic">2016 ML350 4Matic</option>
+<option value="2016 Sprinter">2016 Sprinter</option>
+<option value="2017 C43 AMG 4Matic">2017 C43 AMG 4Matic</option>
+<option value="2017 E400">2017 E400</option>
+<option value="2017 GLC300">2017 GLC300</option>
+<option value="2017 GLS 450 4Matic">2017 GLS 450 4Matic</option>
+<option value="2017 S63">2017 S63</option>
+<option value="2017 Sprinter">2017 Sprinter</option>
+<option value="2018 GLA 250 4Matic">2018 GLA 250 4Matic</option>
+<option value="2018 GLC 300">2018 GLC 300</option>
+<option value="2018 GLC 300 4Matic">2018 GLC 300 4Matic</option>
+<option value="2018 ML350">2018 ML350</option>
+<option value="2018 SPRINTER">2018 SPRINTER</option>
+<option value="2018 e300">2018 e300</option>
+<option value="2019 C300">2019 C300</option>
+<option value="2019 E300">2019 E300</option>
+<option value="2019 GLS 450">2019 GLS 450</option>
+<option value="2019 sprinter">2019 sprinter</option>
+<option value="2020 Sprinter">2020 Sprinter</option>
+<option value="6.9">6.9</option>
+<option value="CORE CHARGE">CORE CHARGE</option>
+<option value="G300">G300</option>
+<option value="Haaglunds BV-206">Haaglunds BV-206</option>
+      </select>
+      <button class="model-search-btn" onclick="searchByModel()">Search</button>
+    </div>
+
+  </div>
+
+  <div id="results"></div>
+
+  <footer>
+    <p style="color:#1a2a6a;font-weight:700;">Sun Valley Mercedes Transmissions</p>
+    <p style="color:#1a2a6a;">18453 Parthenia Pl.</p>
+    <p style="color:#1a2a6a;">Northridge, CA 91325</p>
+    <p style="color:#1a2a6a;">818 782-2300</p>
+    <p><a href="mailto:sunvalleymercedes@gmail.com" style="color:#1a2a6a;">sunvalleymercedes@gmail.com</a></p>
+  </footer>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+
+
+
+
+</script><script>
+// ════════════════════════════════════════════════════════════════════
+//  TRANSMISSION DATABASE — SOURCE: mercedesdismantlers.com/new-price-lisat
+//  All codes, series names, year ranges, and body codes taken directly
+//  from Sun Valley Mercedes Transmissions official price list.
+//  Each entry includes the MB internal series designation (W4A040 etc.)
+// ════════════════════════════════════════════════════════════════════
+
+// Price list series → transmission code ranges:
+// W3A040   722.000-722.004   1972-1975  108,109,107,116 (4.5L)          $2750
+// W3B050   722.005-722.007   1975-1980  6.9L                            $3000
+// W4B025   722.100-722.122   1970-1973  108,109,114,115                 $2750
+// K4A040   722.201           1970-1971  108,109,107 (3.5L)              $3000
+// K4C025   722.201-722.206   1974-1985  107,114,115,116,123             $2750
+// W4A040   722.300-722.391   1981-1995  W126,W124,W107,W116             $2750
+// W4A055   722.362           1992-1999  V-12  140,129,124(500E)         $3000
+// W4A020   722.400-722.443   1985-1996  123,124,201,202                 $2750
+// W5A030   722.500-722.510   1990-1996  129,140                         $2750
+// W5A330   722.600-722.699   1997-2006  202,210,140,220,163             $2750
+// W5A900   722.648-722.649   2003-2009  211 AMG                         $2750
+// W5A400   722.661-722.677   1998-2005  208,209,163                     $2750
+// W5A300   722.662-722.690   1996-2014  140,210,211,163,164,203,204,219 $2750
+// W5A580   722.671-722.689   2000-2005                                  $2750
+// W7C700   722.901-722.909   2005-2009  7G-Tronic                       $3500
+// K7C1000  722.930-722.932   2008-2016  Wet Clutch 7G-Tronic Plus       $4500
+
+const TX_DB = {
+
+  // ─── CLASSIC ERA: Pre-1970 ───────────────────────────────────────
+  'BW_3BAND':    { years:[1955,1956,1957,1958,1959,1960],
+                   code:'Borg Warner 3-Band', series:'Borg Warner', name:'3-Band Automatic w/ Torque Converter',
+                   speeds:'3-Speed Automatic', price:'$4,500',
+                   note:'1955–1960 Borg Warner — 108,109,110,111 body' },
+
+  'K4C025_FC':   { years:[1960,1961,1962,1963,1964,1965,1966,1967,1968,1969,1970,1971],
+                   code:'K4C025 (Fluid Coupler)', series:'K4C025', name:'4/6-Cylinder Fluid Coupler Auto',
+                   speeds:'Automatic', price:'$3,000',
+                   note:'1960–1971 — 108,109,110,111,112,113 body, 4 and 6 cylinder with Fluid Coupler' },
+
+  'K4B050':      { years:[1963,1964,1965,1966,1967,1968,1969,1970,1971],
+                   code:'K4B050', series:'K4B050', name:'6.3L & 600 Grosser Fluid Coupler Auto',
+                   speeds:'Automatic', price:'$4,000',
+                   note:'1963–1971 — 109 body 6.3, 600 "Grosser Mercedes" with Fluid Coupler' },
+
+  // ─── W3A040 / W3B050: 722.000–722.007 (1972–1980) ───────────────
+  'W3A040':      { years:[1972,1973,1974,1975],
+                   code:'722.000–722.004', series:'W3A040', name:'4-Speed Auto (4.5L)',
+                   speeds:'4-Speed Automatic', price:'$2,750',
+                   note:'1972–1975 — 108,109,107,116 body with 4.5L engine' },
+
+  'W3B050':      { years:[1975,1976,1977,1978,1979,1980],
+                   code:'722.005–722.007', series:'W3B050', name:'4-Speed Auto (6.9L)',
+                   speeds:'4-Speed Automatic', price:'$3,000',
+                   note:'1975–1980 — 6.9L engine (116 body 450SEL 6.9)' },
+
+  // ─── W4B025: 722.100–722.122 (1970–1973) ────────────────────────
+  'W4B025':      { years:[1970,1971,1972,1973],
+                   code:'722.100–722.122', series:'W4B025', name:'4-Speed Auto w/ Torque Converter',
+                   speeds:'4-Speed Automatic', price:'$2,750',
+                   note:'1970–1973 — 108,109,114,115 body, all 4 and 6 cylinder' },
+
+  // ─── K4A040 / K4C025: 722.201–722.206 (1970–1985) ───────────────
+  'K4A040':      { years:[1970,1971],
+                   code:'722.201', series:'K4A040', name:'4-Speed Auto (3.5L)',
+                   speeds:'4-Speed Automatic', price:'$3,000',
+                   note:'1970–1971 — 108,109,107 body with 3.5L engine' },
+
+  'K4C025':      { years:[1974,1975,1976,1977,1978,1979,1980,1981,1982,1983,1984,1985],
+                   code:'722.201–722.206', series:'K4C025', name:'4-Speed Auto (4/5/6-Cyl)',
+                   speeds:'4-Speed Automatic', price:'$2,750',
+                   note:'1974–1985 — 107,114,115,116,123 body with 4, 5 or 6 cylinder engine' },
+
+  // ─── W4A040 / W4A028: 722.300–722.395 (1981–1995) ───────────────
+  'W4A040':      { years:[1981,1982,1983,1984,1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995],
+                   code:'722.300–722.391', series:'W4A040 / W4A028', name:'4-Speed Auto',
+                   speeds:'4-Speed Automatic', price:'$2,750',
+                   note:'1981–1995 — W126 (380/500/560SE/SEL/SEC), W124 (300/400/500E), W107 (380/500SL), W201 (190E). Includes W4A028 (722.330–722.395) and W4A040+v630B (722.341–722.348) 4MATIC variants' },
+
+  // ─── W4A055: 722.362 V-12 (1992–1999) ───────────────────────────
+  'W4A055_V12':  { years:[1992,1993,1994,1995,1996,1997,1998,1999],
+                   code:'722.362', series:'W4A055', name:'5-Speed Auto V-12',
+                   speeds:'5-Speed Automatic', price:'$3,000',
+                   note:'1992–1999 — V-12 engine: W140 (600SEL/S600), R129 (SL600), W124 (500E/E500). Rebuilt transmission and torque converter' },
+
+  // ─── W4A020: 722.400–722.443 (1985–1996) ────────────────────────
+  'W4A020':      { years:[1985,1986,1987,1988,1989,1990,1991,1992,1993,1994,1995,1996],
+                   code:'722.400–722.443', series:'W4A020', name:'4-Speed Auto',
+                   speeds:'4-Speed Automatic', price:'$2,750',
+                   note:'1985–1996 — W123 (1985 300D California), W124 (E-Class), W201 (190E/190D), W202 (C-Class)' },
+
+  // ─── W5A030: 722.500–722.510 (1990–1996) ────────────────────────
+  'W5A030':      { years:[1990,1991,1992,1993,1994,1995,1996],
+                   code:'722.500–722.510', series:'W5A030', name:'5-Speed Auto',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'1990–1996 — R129 (300SL/500SL/600SL), W140 (300SE/400SE/500SE early)' },
+
+  // ─── W5A330: 722.600–722.699 (1997–2006) ────────────────────────
+  // This is the main 5G-Tronic family covering W202, W210, W140, W220, W163
+  'W5A330_W202': { years:[1997,1998,1999,2000],
+                   code:'722.6xx', series:'W5A330', name:'5G-Tronic',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'1997–2000 — W202 C-Class (C230K, C280, C43 AMG). Specific code within 722.600–722.619 range' },
+
+  'W5A330_W210': { years:[1996,1997,1998,1999,2000,2001,2002],
+                   code:'722.6xx', series:'W5A330', name:'5G-Tronic',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'1996–2002 — W210 E-Class (E300D, E320, E430, E55 AMG). Specific code within 722.600–722.619 range' },
+
+  'W5A330_W220': { years:[1998,1999,2000,2001,2002,2003,2004,2005,2006],
+                   code:'722.6xx', series:'W5A330', name:'5G-Tronic',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'1998–2006 — W220 S-Class (S320, S430, S500, S55 AMG, S600). Specific code within 722.600–722.619 range' },
+
+  'W5A330_W163': { years:[1998,1999,2000,2001,2002,2003,2004,2005],
+                   code:'722.6xx', series:'W5A330', name:'5G-Tronic',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'1998–2005 — W163 ML-Class (ML320, ML430, ML500, ML55 AMG). Specific code within 722.600–722.619 range' },
+
+  // ─── W5A900: 722.648–722.649 (2003–2009) AMG W211 ────────────────
+  'W5A900':      { years:[2003,2004,2005,2006,2007,2008,2009],
+                   code:'722.648–722.649', series:'W5A900', name:'5G-Tronic AMG',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'2003–2009 — W211 AMG only (E55 AMG, E63 AMG early). High-performance AMG variant' },
+
+  // ─── W5A400: 722.661–722.677 (1998–2005) ────────────────────────
+  // W208 CLK, W209 CLK, W163 ML — W5A400 is the "sport/performance" 5G variant
+  'W5A400':      { years:[1998,1999,2000,2001,2002,2003,2004,2005],
+                   code:'722.661–722.677', series:'W5A400', name:'5G-Tronic Sport',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'1998–2005 — W208 CLK (CLK320, CLK430, CLK55), W209 CLK (CLK320, CLK500, CLK55), W163 ML. Codes: 722.661, 722.663, 722.666, 722.669, 722.670, 722.677' },
+
+  // ─── W5A300: 722.662–722.690 (1996–2014) ────────────────────────
+  // The broadest family — covers W140 late, W210, W211, W163, W164, W203, W204, W208, W209, W219, Sprinter
+  'W5A300':      { years:[1996,1997,1998,1999,2000,2001,2002,2003,2004,2005,2006,2007,2008,2009,2010,2011,2012,2013,2014],
+                   code:'722.662–722.690', series:'W5A300', name:'5G-Tronic / 7G-Tronic (4MATIC)',
+                   speeds:'5 or 7-Speed Automatic', price:'$2,750',
+                   note:'1996–2014 — W140, W210 (E320 4MATIC), W211, W163 ML, W164 ML, W203 C-Class, W204 C-Class, W208/209 CLK, W219 CLS, Sprinter. Codes: 722.662, 722.664, 722.665, 722.667, 722.676, 722.690' },
+
+  // ─── W5A580: 722.671–722.689 (2000–2005) ────────────────────────
+  'W5A580':      { years:[2000,2001,2002,2003,2004,2005],
+                   code:'722.671–722.689', series:'W5A580', name:'5G-Tronic',
+                   speeds:'5-Speed Automatic', price:'$2,750',
+                   note:'2000–2005 — Codes: 722.671, 722.672, 722.673, 722.674, 722.675, 722.689' },
+
+  // ─── W7C700: 722.901–722.909 (2005–2009) ────────────────────────
+  'W7C700':      { years:[2005,2006,2007,2008,2009],
+                   code:'722.901–722.909', series:'W7C700', name:'7G-Tronic',
+                   speeds:'7-Speed Automatic', price:'$3,500',
+                   note:'2005–2009 — 7G-Tronic era: W221 S-Class, W211 E-Class (E350/E550), R230 SL, W209 CLK, W219 CLS, R171 SLK, W164 ML, X164 GL' },
+
+  // ─── K7C1000: 722.930–722.932 (2008–2016) ───────────────────────
+  'K7C1000':     { years:[2008,2009,2010,2011,2012,2013,2014,2015,2016],
+                   code:'722.930–722.932', series:'K7C1000', name:'7G-Tronic Plus (Wet Clutch)',
+                   speeds:'7-Speed Automatic', price:'$4,500',
+                   note:'2008–2016 — 7G-Tronic Plus Wet Clutch: W204 C-Class, W212 E-Class, W166 ML/GL/GLE, X204 GLK, W218 CLS, C217 S-Class coupe' },
+};
+
+// ════════════════════════════════════════════════════════════════════
+//  VIN MODEL CODE RULES
+//  Matches VIN positions 4+ to a TX_DB key + model display name
+//  Rules are tested in order — most specific patterns come FIRST
+// ════════════════════════════════════════════════════════════════════
+const VIN_RULES = [
+  // ─── C W204 ───────────────────────────────────────────────────────
+  { re:/^GF4HB/,  key:'C250_W204',   label:'C250 (W204)' },
+  { re:/^GF4HG/,  key:'C300_W204',   label:'C300 (W204)' },
+  { re:/^GF4JB/,  key:'C350_W204',   label:'C350 (W204)' },
+  { re:/^GF4KB/,  key:'C63_W204',    label:'C63 AMG (W204)' },
+  { re:/^GF[456]/, key:'C300_W204',  label:'C-Class W204' },
+  // ─── C W203 ───────────────────────────────────────────────────────
+  { re:/^DD[46]HB/,key:'C230_W203',  label:'C230 Kompressor (W203)' },
+  { re:/^DD[46]NB/,key:'C230K_W203', label:'C230 Kompressor (W203 2003+)' },
+  { re:/^DD[46]JB/,key:'C240_W203',  label:'C240 (W203)' },
+  { re:/^DD[46]KB/,key:'C320_W203',  label:'C320 (W203)' },
+  { re:/^DD[46]/,  key:'C320_W203',  label:'C-Class W203' },
+  // ─── C W202 ───────────────────────────────────────────────────────
+  { re:/^BF4HB/,  key:'C280_W202',   label:'C280 (W202)' },
+  { re:/^BF4NA/,  key:'C230K_W202',  label:'C230 Kompressor (W202)' },
+  { re:/^BF4/,    key:'C280_W202',   label:'C-Class W202' },
+  // ─── E W211 ───────────────────────────────────────────────────────
+  { re:/^BF5JB/,  key:'E320_W211',   label:'E320 (W211)' },
+  { re:/^BF5LB/,  key:'E350_W211',   label:'E350 (W211)' },
+  { re:/^BF6LB/,  key:'E350_W211',   label:'E350 Wagon T-Model (W211)' },
+  { re:/^BF5MB/,  key:'E500_W211',   label:'E500 (W211)' },
+  { re:/^BF5KB/,  key:'E55_W211',    label:'E55 AMG (W211)' },
+  { re:/^BF5PB/,  key:'E63_W211',    label:'E63 AMG (W211)' },
+  { re:/^BF[56]/,  key:'E350_W211',  label:'E-Class W211' },
+  // ─── E W210 ───────────────────────────────────────────────────────
+  { re:/^UF6JB/,  key:'E320_W210',   label:'E320 (W210)' },
+  { re:/^UF6MB/,  key:'E430_W210',   label:'E430 (W210)' },
+  { re:/^UF6KB/,  key:'E55_W210',    label:'E55 AMG (W210)' },
+  { re:/^UF6/,    key:'E320_W210',   label:'E-Class W210' },
+  { re:/^UF5/,    key:'E320_W210',   label:'E-Class W210/W211' },
+  // ─── E W124 ───────────────────────────────────────────────────────
+  { re:/^AB5HB/,  key:'E320_W124',   label:'E320 (W124)' },
+  { re:/^AB5MB/,  key:'500E_W124',   label:'E500 / 500E (W124)' },
+  { re:/^AB5LB/,  key:'400E_W124',   label:'E420 / 400E (W124)' },
+  { re:/^AB5/,    key:'E320_W124',   label:'E-Class W124' },
+  // ─── S W221 ───────────────────────────────────────────────────────
+  { re:/^SK8MB/,  key:'S550_W221',   label:'S550 (W221)' },
+  { re:/^SK8NB/,  key:'S600_W221',   label:'S600 V12 (W221)' },
+  { re:/^SK8PB/,  key:'S63_W221',    label:'S63 AMG (W221)' },
+  { re:/^SK8/,    key:'S550_W221',   label:'S-Class W221' },
+  // ─── S W220 ───────────────────────────────────────────────────────
+  { re:/^SK7LB/,  key:'S430_W220',   label:'S430 (W220)' },
+  { re:/^SK7MB/,  key:'S500_W220',   label:'S500 (W220)' },
+  { re:/^SK7KB/,  key:'S55_W220',    label:'S55 AMG (W220)' },
+  { re:/^SK7NB/,  key:'S600_W220',   label:'S600 V12 (W220)' },
+  { re:/^SK7/,    key:'S500_W220',   label:'S-Class W220' },
+  // ─── S W140 ───────────────────────────────────────────────────────
+  { re:/^KA5HB/,  key:'S320_W140',   label:'S320 (W140)' },
+  { re:/^KA5LB/,  key:'S420_W140',   label:'S420 (W140)' },
+  { re:/^KA5MB/,  key:'S500_W140',   label:'S500 (W140)' },
+  { re:/^KA5NB/,  key:'S600_W140',   label:'S600 V12 (W140)' },
+  { re:/^KA5/,    key:'S500_W140',   label:'S-Class W140' },
+  // ─── CLK W209 ────────────────────────────────────────────────────
+  { re:/^JF7JB/,  key:'CLK320_W209', label:'CLK320 (W209)' },
+  { re:/^JF7LB/,  key:'CLK350_W209', label:'CLK350 (W209)' },
+  { re:/^JF7MB/,  key:'CLK500_W209', label:'CLK500 (W209)' },
+  { re:/^JF7KB/,  key:'CLK55_W209',  label:'CLK55 AMG (W209)' },
+  { re:/^JF7PB/,  key:'CLK63_W209',  label:'CLK63 AMG (W209)' },
+  { re:/^JF7/,    key:'CLK350_W209', label:'CLK-Class W209' },
+  // ─── CLK W208 ────────────────────────────────────────────────────
+  { re:/^HA[45]JB/,key:'CLK320_W208',label:'CLK320 (W208)' },
+  { re:/^HA[45]MB/,key:'CLK430_W208',label:'CLK430 (W208)' },
+  { re:/^HA[45]KB/,key:'CLK55_W208', label:'CLK55 AMG (W208)' },
+  { re:/^HA[45]/,  key:'CLK320_W208',label:'CLK-Class W208' },
+  // ─── SL R230 ─────────────────────────────────────────────────────
+  { re:/^FA8MB/,  key:'SL500_R230',  label:'SL500 (R230)' },
+  { re:/^FA8LB/,  key:'SL550_R230',  label:'SL550 (R230)' },
+  { re:/^FA8NB/,  key:'SL600_R230',  label:'SL600 V12 (R230)' },
+  { re:/^FA8/,    key:'SL550_R230',  label:'SL-Class R230' },
+  // ─── SL R129 ─────────────────────────────────────────────────────
+  { re:/^FA7HB/,  key:'SL320_R129',  label:'SL320 (R129)' },
+  { re:/^FA7MB/,  key:'SL500_R129l', label:'SL500 (R129)' },
+  { re:/^FA7NB/,  key:'SL600_R129',  label:'SL600 V12 (R129)' },
+  { re:/^FA7/,    key:'SL500_R129l', label:'SL-Class R129' },
+  // ─── SLK R171 ────────────────────────────────────────────────────
+  { re:/^KH6LB/,  key:'SLK350_R171', label:'SLK350 (R171)' },
+  { re:/^KH6HB/,  key:'SLK280_R171', label:'SLK280 (R171)' },
+  { re:/^KH6KB/,  key:'SLK55_R171',  label:'SLK55 AMG (R171)' },
+  { re:/^KH6/,    key:'SLK350_R171', label:'SLK-Class R171' },
+  // ─── SLK R170 ────────────────────────────────────────────────────
+  { re:/^HA3HB/,  key:'SLK230_R170', label:'SLK230 (R170)' },
+  { re:/^HA3JB/,  key:'SLK320_R170', label:'SLK320 (R170)' },
+  { re:/^HA3/,    key:'SLK230_R170', label:'SLK-Class R170' },
+  // ─── GL X166/GLE ─────────────────────────────────────────────────
+  { re:/^CY3/,    key:'GL450_X166',  label:'GL/GLE (X166/W166)' },
+  { re:/^GF8/,    key:'GL450_X166',  label:'GL-Class X166' },
+  // ─── GL X164 ─────────────────────────────────────────────────────
+  { re:/^GF7LB/,  key:'GL320_X164',  label:'GL320 CDI (X164)' },
+  { re:/^GF7MB/,  key:'GL450_X164',  label:'GL450 (X164)' },
+  { re:/^GF7NB/,  key:'GL550_X164',  label:'GL550 (X164)' },
+  { re:/^GF7/,    key:'GL450_X164',  label:'GL-Class X164' },
+  // ─── ML W164 ─────────────────────────────────────────────────────
+  { re:/^BF7LB/,  key:'ML350_W164',  label:'ML350 (W164)' },
+  { re:/^BF7MB/,  key:'ML500_W164',  label:'ML500 (W164)' },
+  { re:/^BF7NB/,  key:'ML550_W164',  label:'ML550 (W164)' },
+  { re:/^BF7PB/,  key:'ML63_W164',   label:'ML63 AMG (W164)' },
+  { re:/^BF7/,    key:'ML350_W164',  label:'ML-Class W164' },
+  // ─── ML W163 ─────────────────────────────────────────────────────
+  { re:/^BF8JB/,  key:'ML320_W163',  label:'ML320 (W163)' },
+  { re:/^BF8MB/,  key:'ML430_W163',  label:'ML430 (W163)' },
+  { re:/^BF8NB/,  key:'ML500_W163',  label:'ML500 (W163)' },
+  { re:/^BF8/,    key:'ML320_W163',  label:'ML-Class W163' },
+  // ─── GLK X204 ────────────────────────────────────────────────────
+  { re:/^YC3LB/,  key:'GLK350_X204', label:'GLK350 (X204)' },
+  { re:/^YC3HB/,  key:'GLK250_X204', label:'GLK250 CDI (X204)' },
+  { re:/^YC3/,    key:'GLK350_X204', label:'GLK-Class X204' },
+  // ─── CLS W219 ────────────────────────────────────────────────────
+  { re:/^JF8LB/,  key:'CLS350_W219', label:'CLS350 (W219)' },
+  { re:/^JF8MB/,  key:'CLS500_W219', label:'CLS500 (W219)' },
+  { re:/^JF8NB/,  key:'CLS550_W219', label:'CLS550 (W219)' },
+  { re:/^JF8PB/,  key:'CLS63_W219',  label:'CLS63 AMG (W219)' },
+  { re:/^JF8/,    key:'CLS550_W219', label:'CLS-Class W219' },
+  // ─── G W463 ──────────────────────────────────────────────────────
+  { re:/^BB6MB/,  key:'G500_W463',   label:'G500 (W463)' },
+  { re:/^BB6KB/,  key:'G55_W463',    label:'G55 AMG (W463)' },
+  { re:/^BB6PB/,  key:'G63_W463',    label:'G63 AMG (W463)' },
+  { re:/^BB6/,    key:'G500_W463',   label:'G-Class W463' },
+  // ─── 190 W201 ────────────────────────────────────────────────────
+  { re:/^DB4HB/,  key:'190E23_W201', label:'190E 2.3 (W201)' },
+  { re:/^DB4JB/,  key:'190E26_W201', label:'190E 2.6 (W201)' },
+  { re:/^DB4/,    key:'190E23_W201', label:'190E (W201)' },
+  // ─── USA-built ML/GL (4JG prefix) ────────────────────────────────
+  { re:/^BF7/,    key:'ML350_W164',  label:'ML/GL (Vance, AL)' },
+];
+
+// ─── Support functions ─────────────────────────────────────────────
+const WMI_DATA = {
+  'WDB':{ country:'Germany',   make:'Mercedes-Benz AG (Sindelfingen/Bremen)' },
+  'WDD':{ country:'Germany',   make:'Mercedes-Benz AG (Rastatt/Bremen)' },
+  'WDC':{ country:'Germany/USA',make:'Mercedes-Benz AG' },
+  '4JG':{ country:'USA',       make:'Mercedes-Benz US International (Vance, AL)' },
+  '4JH':{ country:'USA',       make:'Mercedes-Benz US International (Vance, AL)' },
+  'VSA':{ country:'Spain',     make:'Mercedes-Benz España (Vitoria)' },
+  'ZAM':{ country:'Austria',   make:'Magna Steyr (contracted for Mercedes)' },
+};
+
+function getPlant(vin) {
+  const wmi = vin.substring(0,3), p = vin[10].toUpperCase();
+  const map = {
+    'WDB':{'A':'Sindelfingen — S/SL/CL','B':'Sindelfingen','C':'Bremen — C/E/SLK/CLK','D':'Düsseldorf','F':'Hamburg','G':'Graz, Austria — G-Class','H':'Hambach — Smart'},
+    'WDD':{'A':'Sindelfingen','B':'Bremen','C':'Bremen/Vance','R':'Rastatt — A/B/CLA/GLA'},
+    'WDC':{'A':'Vance, Alabama','B':'Vance, Alabama','C':'Vance, Alabama'},
+    '4JG':{'A':'Vance, Alabama','B':'Vance, Alabama','C':'Vance, Alabama'},
+  };
+  return (map[wmi] && map[wmi][p]) || (wmi.startsWith('4J') ? 'Vance, Alabama, USA' : 'Germany');
+}
+
+function getYearBoth(c) {
+  const n={'1':2001,'2':2002,'3':2003,'4':2004,'5':2005,'6':2006,'7':2007,'8':2008,'9':2009};
+  if (n[c]) return {year:n[c], alt:null};
+  const a={'A':1980,'B':1981,'C':1982,'D':1983,'E':1984,'F':1985,'G':1986,'H':1987,'J':1988,'K':1989,'L':1990,'M':1991,'N':1992,'P':1993,'R':1994,'S':1995,'T':1996,'V':1997,'W':1998,'X':1999,'Y':2000};
+  const b={'A':2010,'B':2011,'C':2012,'D':2013,'E':2014,'F':2015,'G':2016,'H':2017,'J':2018,'K':2019,'L':2020,'M':2021,'N':2022,'P':2023,'R':2024,'S':2025};
+  const y1=a[c], y2=b[c];
+  if (y1 && y2) return {year:y1, alt:y2};
+  return {year:y1||y2, alt:null};
+}
+
+function checkDigit(vin) {
+  const v={'A':1,'B':2,'C':3,'D':4,'E':5,'F':6,'G':7,'H':8,'J':1,'K':2,'L':3,'M':4,'N':5,'P':7,'R':9,'S':2,'T':3,'V':4,'W':5,'X':6,'Y':7,'Z':8,'0':0,'1':1,'2':2,'3':3,'4':4,'5':5,'6':6,'7':7,'8':8,'9':9};
+  const w=[8,7,6,5,4,3,2,10,0,9,8,7,6,5,4,3,2];
+  let s=0;
+  for(let i=0;i<17;i++){const x=v[vin[i].toUpperCase()];if(x===undefined)return false;s+=x*w[i];}
+  const r=s%11;
+  return vin[8].toUpperCase()===(r===10?'X':String(r));
+}
+
+function isMercedes(vin) {
+  return /^(WDB|WDD|WDC|4JG|4JH|VSA|ZAM)/.test(vin.toUpperCase());
+}
+
+function findTransmission(vin, year) {
+  const pos4 = vin.substring(3).toUpperCase();
+  for (const rule of VIN_RULES) {
+    if (rule.re.test(pos4)) {
+      const entry = TX_DB[rule.key];
+      if (!entry) continue;
+      const inRange = entry.years.includes(year);
+      return {
+        ...entry,
+        label: rule.label,
+        inRange,
+        confidence: inRange ? 'exact' : 'likely',
+        yearWarning: inRange ? null : `Year ${year} is outside the typical range for this model (${entry.years[0]}–${entry.years[entry.years.length-1]}). Verify year code in position 10.`
+      };
+    }
+  }
+  // Year-only fallback
+  let code, name, speeds, note;
+  if (year<=1979)      {code='722.1–722.2'; name='Early 3/4-Speed Auto';  speeds='3 or 4-Speed'; note='Pre-722.3 era. Specific code requires full model lookup.';}
+  else if (year<=1995) {code='722.3–722.5'; name='Classic 4-Speed Auto';  speeds:'4-Speed';       note='Pre-5G era. Exact sub-code needs model verification.';}
+  else if (year<=2003) {code='722.6';       name='5G-Tronic';             speeds='5-Speed';       note='5G-Tronic era. Sub-code needs model match.';}
+  else if (year<=2013) {code='722.9';       name='7G-Tronic';             speeds='7-Speed';       note='7G-Tronic era. Confirm variant.';}
+  else                 {code='722.9 / 725.0'; name='7G-Tronic Plus or 9G-Tronic'; speeds='7 or 9-Speed'; note='2014+ — depends on exact model.';}
+  return {code, name, speeds, note, label:'Unknown model', inRange:true, confidence:'estimated', yearWarning:null, years:[]};
+}
+
+// ─── MAIN ─────────────────────────────────────────────────────────
+function decodeVIN() {
+  const raw = document.getElementById('vinInput').value.trim().toUpperCase().replace(/\s/g,'');
+  const input = document.getElementById('vinInput');
+  const errDiv = document.getElementById('errorMsg');
+  const results = document.getElementById('results');
+
+  errDiv.style.display='none';
+  input.classList.remove('valid','invalid');
+
+  if (raw.length < 6) {
+    input.classList.add('invalid');
+    errDiv.textContent = 'Please enter at least 6 characters. You entered ' + raw.length + '.';
+    errDiv.style.display='block'; results.style.display='none'; return;
+  }
+
+  input.classList.add('valid');
+
+  // PARTIAL VIN: show sales match only
+  if (raw.length < 17) {
+    const matches = findSalesMatches(raw);
+    const rowsHtml = matches.length === 0
+      ? '<div class="sales-no-match">No records found matching prefix <strong>' + raw.substring(0,6) + '</strong> in sales history.</div>'
+      : '<table class="sales-match-table"><thead><tr><th>Model</th><th>VIN</th><th>Price</th></tr></thead><tbody>' +
+        matches.map(function(m) {
+          var model = m[0], svin = m[1], price = m[2];
+          var clean = svin.replace(/[\s\-]/g,'').toUpperCase();
+          var hi = '<span class="match-highlight">' + clean.substring(0,6) + '</span><span class="match-rest">' + clean.substring(6) + '</span>';
+          var subject = encodeURIComponent('Transmisison inquiry - ' + model);
+          var body = encodeURIComponent('To: Sun Valley Mercedes Transmissions\n18453 Parthenia Pl.\nNorthridge, CA 91325\n818 782-2300\n\nI need a transmission for my ' + model + '. Please verify price and include shipping costs.\n\nCustomer Name: \nVehicle VIN: \nDestination Zip Code: \n\nThank you');
+          var link = '<a href="mailto:sunvalleymercedes@gmail.com?subject=' + subject + '&body=' + body + '" style="color:#c9a84c;font-weight:bold;text-decoration:underline;">' + model + '</a>';
+          return '<tr><td>' + link + '</td><td class="sales-match-vin">' + hi + '</td><td class="sales-match-price">$' + price.toLocaleString() + '</td></tr>';
+        }).join('') + '</tbody></table>';
+    results.innerHTML =
+      '<div class="sales-panel">' +
+        '<div class="sales-panel-title">Sales History Match <span class="sales-match-count">' + matches.length + '</span></div>' +
+        '<div class="sales-panel-sub">Matching prefix <strong style="color:#c9a84c;">' + raw.substring(0,6) + '</strong> against Sun Valley sales records &middot; Enter all 17 characters for full transmission decode</div>' +
+        rowsHtml +
+      '</div>';
+    results.style.display='block';
+    results.scrollIntoView({behavior:'smooth',block:'nearest'});
+    return;
+  }
+
+  // FULL 17-char VIN decode
+  if (!isMercedes(raw)) {
+    input.classList.add('invalid');
+    errDiv.textContent = 'Not a recognized Mercedes-Benz VIN. MB VINs begin with WDB, WDD, WDC, 4JG, or 4JH. You entered: "' + raw.substring(0,3) + '"';
+    errDiv.style.display='block'; results.style.display='none'; return;
+  }
+
+  const wmi = raw.substring(0,3);
+  const yearCode = raw[9];
+  const {year, alt} = getYearBoth(yearCode);
+  const primaryYear = year || alt || 2005;
+  const checkOK = checkDigit(raw);
+  const plant = getPlant(raw);
+  const serial = raw.substring(11,17);
+  const wmiData = WMI_DATA[wmi] || {country:'Unknown', make:'Unknown'};
+  const yearDisplay = alt ? (year + ' or ' + alt) : String(year||'Unknown');
+  const tx = findTransmission(raw, primaryYear);
+  const txAlt = alt ? findTransmission(raw, alt) : null;
+  const hasAltTx = txAlt && txAlt.code !== tx.code;
+
+  const confLabel = {exact:'EXACT MATCH',likely:'LIKELY MATCH',estimated:'YEAR ESTIMATED'};
+  const confClass = {exact:'exact',likely:'likely',estimated:'estimated'};
+
+  const posLabels = ['WMI','WMI','WMI','Mdl','Mdl','Body','Eng','Rst','Chk','Year','Plnt','Seq','Seq','Seq','Seq','Seq','Seq'];
+
+  results.innerHTML = `
+    <div class="vin-breakdown">
+      <div class="breakdown-title">VIN Decode — Green = Model Code (Determines Transmission) · Gold = Year &amp; WMI</div>
+      <div class="vin-chars">
+        ${raw.split('').map((c,i)=>{
+          const cls = (i>=3&&i<=7) ? 'tx-highlight' : (i<=2||i===9||i===10) ? 'highlight' : '';
+          const lCls = (i>=3&&i<=7) ? 'green' : '';
+          return `<div class="vin-char-group"><div class="vin-char ${cls}">${c}</div><div class="vin-char-pos">${i+1}</div><div class="vin-char-label ${lCls}">${posLabels[i]||''}</div></div>`;
+        }).join('')}
+      </div>
+      <div style="margin-top:12px;font-size:11px;color:var(--silver-dark);display:flex;gap:20px;flex-wrap:wrap;">
+        <span style="color:#c9a84c;">■ WMI (manufacturer) / Year / Plant</span>
+        <span style="color:#4ade80;">■ Positions 4–8: model code → determines exact transmission</span>
+      </div>
+    </div>
+
+    <div class="data-grid">
+      <div class="data-card">
+        <div class="card-label">Model Year</div>
+        <div class="card-value gold">${yearDisplay}</div>
+        <div class="card-sub">Position 10: "${yearCode}"${alt?' — ambiguous (see below)':''}</div>
+      </div>
+      <div class="data-card">
+        <div class="card-label">Identified Vehicle</div>
+        <div class="card-value" style="font-size:18px;">${tx.label}</div>
+        <div class="card-sub">Model code (pos 4–8): ${raw.substring(3,8)}</div>
+      </div>
+      <div class="data-card">
+        <div class="card-label">Manufacturer</div>
+        <div class="card-value" style="font-size:15px;">${wmiData.make}</div>
+        <div class="card-sub">${wmiData.country}</div>
+      </div>
+      <div class="data-card">
+        <div class="card-label">Assembly Plant</div>
+        <div class="card-value" style="font-size:15px;">${plant}</div>
+        <div class="card-sub">Position 11: "${raw[10]}"</div>
+      </div>
+      <div class="data-card">
+        <div class="card-label">VIN Check Digit</div>
+        <div class="card-value ${checkOK?'good':'warn'}">${checkOK?'✓ Valid':'⚠ Mismatch'}</div>
+        <div class="card-sub">${checkOK?'Passes NHTSA algorithm':'May be mis-typed or altered'}</div>
+      </div>
+      <div class="data-card">
+        <div class="card-label">Production Sequence</div>
+        <div class="card-value" style="font-family:'Share Tech Mono',monospace;font-size:18px;letter-spacing:3px;">${serial}</div>
+        <div class="card-sub">Positions 12–17</div>
+      </div>
+    </div>
+
+    <div class="transmission-panel">
+      <div class="tp-title">Transmission Number Result</div>
+      <span class="tp-confidence ${confClass[tx.confidence]}">${confLabel[tx.confidence]}</span>
+      <div class="tx-code-big">${tx.code}</div>
+      <div class="tx-name-big">${tx.name}</div>
+      <div class="tp-grid">
+        <div class="tp-item">
+          <label>Speed Configuration</label>
+          <div class="tp-val">${tx.speeds}</div>
+        </div>
+        <div class="tp-item">
+          <label>Applicable Years</label>
+          <div class="tp-val">${tx.years&&tx.years.length ? tx.years[0]+'–'+tx.years[tx.years.length-1] : 'Multiple'}</div>
+        </div>
+        <div class="tp-item" style="grid-column:1/-1;">
+          <label>Technical Notes</label>
+          <div class="tp-sub">${tx.note}</div>
+        </div>
+        ${tx.yearWarning?`<div class="tp-item" style="grid-column:1/-1;"><label>Year Caution</label><div class="tp-sub" style="color:#fbbf24;">⚠ ${tx.yearWarning}</div></div>`:''}
+      </div>
+      ${hasAltTx?`<div class="multi-match">
+        <div class="multi-match-title">⚠ Year Ambiguity — VIN Position 10 Could Mean Two Years</div>
+        <div class="match-row"><div class="match-code">${tx.code}</div><div><div class="match-desc">${tx.name} — if year is ${year}</div><div class="match-note">${tx.note}</div></div></div>
+        <div class="match-row"><div class="match-code">${txAlt.code}</div><div><div class="match-desc">${txAlt.name} — if year is ${alt}</div><div class="match-note">${txAlt.note}</div></div></div>
+      </div>`:''}
+    </div>
+
+    <div class="decode-table">
+      <div class="decode-table-header">Complete VIN Segment Decode</div>
+      <table>
+        <tr><td>World Manufacturer (1–3)</td><td>${wmi}</td><td>${wmiData.make}, ${wmiData.country}</td></tr>
+        <tr><td>Model Code (4–8)</td><td>${raw.substring(3,8)}</td><td>${tx.label}</td></tr>
+        <tr><td>Check Digit (9)</td><td>${raw[8]}</td><td>${checkOK?'✓ Valid — passes NHTSA check algorithm':'⚠ Mismatch — verify VIN is correct'}</td></tr>
+        <tr><td>Model Year (10)</td><td>${yearCode}</td><td>${yearDisplay}</td></tr>
+        <tr><td>Assembly Plant (11)</td><td>${raw[10]}</td><td>${plant}</td></tr>
+        <tr><td>Production Sequence (12–17)</td><td>${serial}</td><td>Unit #${serial} in production run</td></tr>
+        <tr><td style="color:#4ade80; font-weight:bold;">Transmission Number</td><td style="font-family:'Share Tech Mono',monospace;font-size:15px;color:#4ade80;font-weight:bold;">${tx.code}</td><td style="color:#4ade80;">${tx.name} · ${tx.speeds} · ${confLabel[tx.confidence]}</td></tr>
+        <tr><td>Full VIN</td><td colspan="2" style="font-family:'Share Tech Mono',monospace;letter-spacing:3px;color:#e0c06a;">${raw}</td></tr>
+      </table>
+    </div>
+
+    
+      <div class="sales-panel-sub">Matching first 6 VIN characters against Sun Valley's real sales records</div>
+      <div id="salesMatchContent"></div>
+    </div>
+
+    <div class="cta-bar">
+      <div class="cta-text">
+        <h3>Need a ${tx.code} Transmission?</h3>
+        <p>Sun Valley carries rebuilt <span>${tx.code} (${tx.name})</span> units for the ${primaryYear} ${tx.label}. Dynamometer tested · 2-year unlimited mileage warranty · No core deposit · Ships nationwide.</p>
+      </div>
+      <a href="mailto:sunvalleymercedes@gmail.com?subject=Transmisison inquiry - ${tx.label}&body=To: Sun Valley Mercedes Transmissions%0A18453 Parthenia Pl.%0ANorthridge, CA 91325%0A818 782-2300%0A%0AI need a transmission for my ${primaryYear} ${tx.label}. Please verify price and include shipping costs.%0A%0ACustomer Name: %0AVehicle VIN: %0ADestination Zip Code: %0A%0AThank you" class="cta-btn">Request Quote</a>
+    </div>
+  `;
+
+
+
+
+  results.style.display='block';
+  results.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+
+
+document.getElementById('vinInput').addEventListener('input', function() {
+  const v = this.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/gi,'');
+  this.value = v;
+  document.getElementById('charCount').textContent = v.length;
+  if (v.length>=6) decodeVIN();
+  if (v.length<6) {
+    this.classList.remove('valid','invalid');
+    document.getElementById('errorMsg').style.display='none';
+    document.getElementById('results').style.display='none';
+  }
+});
+
+document.getElementById('vinInput').addEventListener('keydown', function(e) {
+  if (e.key==='Enter') decodeVIN();
+});
+</script>
+
+<script>
+// ── Sales History Database (538 records from QuickBooks) ──────────
+const SALES_DB=[
+  ['1010 E350 4Matic','4JGBB80GB8BA632407',400],
+  ['1966 230','11001012092470',3000],
+  ['1967 230','1100111219175',2750],
+  ['1969 280SL','11304412004429',8100],
+  ['1969 300SEL 6','10901812002663',3000],
+  ['1971 280SL','11304412018470',109105],
+  ['1971 300SEL 6.3','10901812004918',25200],
+  ['1972 280SE4.5','10806812017070',20250],
+  ['1973 280','11406012014779',2750],
+  ['1973 280C','11407312001652',4300],
+  ['1973 450SL','10704412008954',28434.97],
+  ['1973 450SL','10704412011484',28434.97],
+  ['1974 450SL','10704412019778',8850],
+  ['1975 240D','11511712127128',4800],
+  ['1975 450SL','10704412024119',13500],
+  ['1976 450SL','10704412032683',10500],
+  ['1976 450SLC','WDB10702412013561',2750],
+  ['1977 300D','12313012042839',10750],
+  ['1977 450SL','10704412035805',12300],
+  ['1978 240D','12312312053776',4750],
+  ['1979 300D','12313012157101',2250],
+  ['1979 450SL','10704412057835',22250],
+  ['1979 450SL','WDBFA67F5WF164403',22250],
+  ['1980 240D','WDB12312312197524',3700],
+  ['1980 240D','WDBAB23A6DB374507',3700],
+  ['1980 300SD','WDB11612012020793',6550],
+  ['1980 450SL','WDB10704412059977',20100],
+  ['1980 450SL','WDB10704412065952',20100],
+  ['1980 450SL','WDB10704412063514',20100],
+  ['1981 300D','WDBAB30A7BB224073',8300],
+  ['1981 380SL','WDBBA45A2BB001557',9800],
+  ['1982 240D','WDBAB23A9CB328281',7250],
+  ['1982 240D','WDBAB23A0CB326807',7250],
+  ['1982 300CD','WDBAB53AXCB000966',7500],
+  ['1982 300D','WDBAB33A9CB002843',21300],
+  ['1982 300D','WDBAB33A7CB007443',21300],
+  ['1982 380SL','WDBBA45A2CB011293',6800],
+  ['1982 380SL','WDBBA45A1CB010252',6800],
+  ['1983 240D','WDBAB23AXDB391522',7500],
+  ['1983 240D','WDBAB23A5DB382937',7500],
+  ['1983 300CD','WDBAB53A3DB003810',7300],
+  ['1983 300D','WDBAB33A3DB018733',18900],
+  ['1983 300D','WDBAA936A7DN016100',18900],
+  ['1983 300SD','WDBCB20A1DB047753',19900],
+  ['1983 300SD','12612012047463',19900],
+  ['1983 300SD','WDBCB20A0DB036226',19900],
+  ['1983 380SL','WDBBA45C9FA016621',27650],
+  ['1983 380SL','WDBBA45A8DB026403',27650],
+  ['1984 280GE','WDB46021217036079',2550],
+  ['1984 300D','WDBAB33A4EA119139',15625],
+  ['1984 300D','WDBAB33A2EA085346',15625],
+  ['1984 300TD','WDBAB93A3EF027665',2700],
+  ['1984 380SL','WDBBA45A1E004931',17250],
+  ['1984 380SL','WDBBA45A6EA013964',17250],
+  ['1984 500SL','WDB1070461A010927',2550],
+  ['1985 380SL','WDBBA45CXFA026820',16225],
+  ['1985 380SL','WDBBA45C6FA031724',16225],
+  ['1985 380SL','WDBBA45C5FA022013',16225],
+  ['1985 500SL','1070461A026203',7350],
+  ['1985 500SL','WDB1070461A033176',7350],
+  ['1986 190E 16V','WDB2010341A201589',2250],
+  ['1986 190E 2.3','WDBDA24D7GF268329',6750],
+  ['1986 300E','WDBEA30DXGA202208',7650],
+  ['1986 300E','WDBEA30D6GA280226',7650],
+  ['1986 420SEL','WDBCA35D4GA195028',6550],
+  ['1986 560SEC','WDBCA45D0GA272032',9550],
+  ['1986 560SEC','WDBCA45DXGA272166',9550],
+  ['1986 560SEC','WDBCA45D8GA267385',9550],
+  ['1986 560SEL','WDBCA39D7GA265289',6300],
+  ['1986 560SL','126270770172231302753056',26850],
+  ['1986 560SL','WDBBA48D2GA048879',26850],
+  ['1986 560SL','WDBBA48F7GA050112',26850],
+  ['1987 300SDL','WDBCB25D36A260944',17750],
+  ['1987 300SDL','WDBCB25D6HA306235',17750],
+  ['1987 560SE/C','WDBCA45D3HA323749',7700],
+  ['1987 560SEL','WDBCA39D6HA285339',4250],
+  ['1987 560SL','WDBBA48D8HA059161',25550],
+  ['1987 560SL','WDBBA48D4HA073624',25550],
+  ['1988 190E 2.6','WDBDA29D4JF503608',150],
+  ['1988 300E','WDBEA30D4JA708110',10925],
+  ['1988 300E','WDBEA30D8JA764907',10925],
+  ['1988 560SE/C','WDBCA45D1JA369151',9500],
+  ['1988 560SE/C','WDBCA4508HA357105',9500],
+  ['1988 560SEL','WDBRF61J15F627941',11600],
+  ['1988 560SEL','WDBCA39D7JA375265',11600],
+  ['1988 560SL','WDBBA480XJA077067',64575],
+  ['1988 560SL','WDBBA48D3JA079548',64575],
+  ['1988 560SL','WDBBA48D9JA083880',64575],
+  ['1989 300SEL','WDBCA25E2KA452988',9250],
+  ['1989 420SEL','WDBCA35E6KA445239',5250],
+  ['1989 560SE/C','WDBWK73F86F120064',10000],
+  ['1990 300E','WDBEA30D7LB172394',6500],
+  ['1990 300E','WDBEA30D6LB234299',6500],
+  ['1990 300SE','WDBCA25D4LA508891',6250],
+  ['1990 300SEL','WDBCA25D8LA546690',3125],
+  ['1990 300TE','WDBEA90D1LF146644',3000],
+  ['1990 300TE','WDBED90E0NF222857',3000],
+  ['1990 560SEL','WDBCA39EXLA537899',13750],
+  ['1991 190E 2.6','WDBDA29D2NF873560',1700],
+  ['1991 300CE','WDBEA51D6MB365583',4250],
+  ['1991 300D 2.5','WDBEB28D3MB332770',6550],
+  ['1991 300SEL','WDBCA24E3MA596540',9350],
+  ['1991 300SL','WDBFA61E9MF027929',8350],
+  ['1991 300SL','WDBFA61E9MF028580',8350],
+  ['1991 300TE 4 MATIC','WDBED90E4LF131118',4500],
+  ['1991 350SD','CB34E5MA598678',9000],
+  ['1991 350SDL','WDBCB35D8MA583792',6000],
+  ['1991 420SEL','WDBCA35E1MA588960',8625],
+  ['1991 560SE/C','WDBCA45E3MA576749',15700],
+  ['1991 560SE/C','WDBCA45E2MA608171',15700],
+  ['1992 300D 2.5','WDBEB28E8NB671003',12400],
+  ['1992 300D 2.5','WDBEB28D4NB595609',12400],
+  ['1992 300D 2.5','WDBEB28D3NB551570',12400],
+  ['1992 300E 4MATIC TRANSFER CASE','WDBED30D2NB565973',150],
+  ['1992 300SL','WDWFA61E8PF071523',2250],
+  ['1992 300TE 4MATIC','WDBED90D8NF189226',375],
+  ['1992 300TE 4MATIC TRANSFER CASE','WDBED90D8NF189226',250],
+  ['1992 500E','WDBEA36E3NB800535',14800],
+  ['1992 500SL','WDBFA66EXNF052364',6800],
+  ['1993 190E 2.6','WDBDA29D9PG029643',6800],
+  ['1993 190E 2.6','WDBDA29D9PG063226',6800],
+  ['1993 300D 2.5','WDBEB28E2PB860779',5800],
+  ['1993 300E 2.8','WDBEA28E2PB997319',10100],
+  ['1993 300SD','WDBGB34E3PA102783',6500],
+  ['1993 300TE 4MATIC','WDBED90E7PF256295',2550],
+  ['1993 300TE 4MATIC TRANSFER CASE','WDBED90E8PF252689',7750],
+  ['1993 400E','WDBEA34E7PB859772',20000],
+  ['1993 E320','1240661B803737',12500],
+  ['1993 E320','WDBEA32E9PB987787',12500],
+  ['1994 E320','WDBEA92E2RF273577',31775],
+  ['1994 E320','WDBEA92EXRF268269',31775],
+  ['1994 E420','WDBEA34E2RC137106',6300],
+  ['1994 S320','WDB1400321A293834',2900],
+  ['1994 S420','WDBGA43E0RA175462',2550],
+  ['1994 SL600','WDBFA76E5RF099216',4950],
+  ['1995 500E','WDB1240361B6773166',9550],
+  ['1995 500E','WDBEA36E3RC167387',9550],
+  ['1995 C280','WDBHA28E2TF365596',8300],
+  ['1995 C36','WDBHM36EXSF210633',4800],
+  ['1995 E320','WDBEA92E3SF326986',103950],
+  ['1995 E320','WDBEA66E9SC185514',103950],
+  ['1995 E320','WDBEA92E9SF333599',103950],
+  ['1995 E420','WDBEA34E5SC171708',5850],
+  ['1995 E420','WDBEA34E9SC158976',5850],
+  ['1995 G320','WDB46323117097077',2550],
+  ['1995 S320','WDB1400331A323161',16050],
+  ['1995 S500','WDBGA51E1SA238051',13275],
+  ['1995 S500','WDBGA51E8SA210053',13275],
+  ['1995 SL320','WDBFA63E75F112262',11500],
+  ['1995 SL500','WDBFA67E6SF122520',19900],
+  ['1996 350GD','WDB46332117102168',2750],
+  ['1996 C220','WDBHA22E0TF384303',2000],
+  ['1996 C230','WDBHA23E8VF484845',2550],
+  ['1996 SL320','WDBFA63F3TF138450',10550],
+  ['1996 SL320','WDBFA63F6TF126616',10550],
+  ['1996 SL500','WDBFA67FSTF126569',7350],
+  ['1996 SL500','WDBFA67F2TF128471',7350],
+  ['1996 s600','WDBGA57E7TA308502',2213.5],
+  ['1997 C230','WDBHA23E4VF501124',4500],
+  ['1997 E300D','WDBJF25F1WA468381',4550],
+  ['1997 E320','WDBJF55F1VA361377',8300],
+  ['1997 E320','WDBJF55F4VA408207',8300],
+  ['1997 E420','WDBJF72F4VA129551',6750],
+  ['1997 S420','WDGBA43G7VA365089',3100],
+  ['1997 S420','WDBGA43G3VA339332',3100],
+  ['1997 S420','WDBGA43G9VA331669',3100],
+  ['1997 S500','WDBGA51G7VA363013',9300],
+  ['1997 S500','WDBGA51GXVA361367',9300],
+  ['1997 SL500','WDBFA67F9VF144427',6550],
+  ['1998 C43','WDBHA33G4WF695324',2550],
+  ['1998 E320','WDBJF65F9WA646352',11200],
+  ['1998 E320 4 MATIC','WDBJF82F6WX007830',2250],
+  ['1998 E420','WDBJF72F0VA553857',2550],
+  ['1998 E430','WDBJF70F05WA634924',4800],
+  ['1998 ML 320','4JGAB54E8WA046935',7050],
+  ['1998 ML 320','4JGAB54E6XA057112',7050],
+  ['1998 S320','WDBGA33GXWA380732',2750],
+  ['1998 S420','WDBGA43G6WA397372',4500],
+  ['1999 CL500','WDBGA70G0XA415324',5100],
+  ['1999 CLK320','WDBLK65G5XT008036',2250],
+  ['1999 E300D','WDBJF25H7XA839529',9800],
+  ['1999 E300D','WDBJF25HXXA798779',9800],
+  ['1999 E300D','WDBJF25H2XA929736',9800],
+  ['1999 E320','WDBJF65GXYA961155',2550],
+  ['1999 E320 4MATIC WAGON','WDBJF82H4XX015086',5450],
+  ['2000 C280','WDBHA29G8YA828832',2550],
+  ['2000 ML430','4JGAB72E7YA206367',2250],
+  ['2000 S430','WDBNG70J4YA018931',5300],
+  ['2000 S500','WDBNG75J3YA111108',4800],
+  ['2000 cl500','WDBTJ75J0YA002275',5257.71],
+  ['2001 CLK55','WDBLJ74GX1F175363',2250],
+  ['2001 E320 4Matic','WDBJF82J81X060610',5750],
+  ['2001 E320 4Matic','WDBJH82JX2X064301',5750],
+  ['2001 S430','WDBNG70J11A136862',5050],
+  ['2001 S430','WDBNG70J91A213249',5050],
+  ['2001 SLK 320','WDBKK65F21F220465',2500],
+  ['2001 e430','WDBJF70J61B367512',4250],
+  ['2002 CLK320','WDBLK65G02T114192',5000],
+  ['2002 CLK320','WDBTJ65J23F017011',5000],
+  ['2002 CLK430','WDBLJ70G02T094929',4250],
+  ['2002 E320','WDBJF65J22B500061',11300],
+  ['2002 E55','WDBJF74J02B476432',4500],
+  ['2002 E55','WDBJF74J02B472199',4500],
+  ['2002 Sprinter 2500','WD2YD541635421234',15750],
+  ['2003 C230','WDBRF40J03A528284',4500],
+  ['2003 C320','WDBRF64J53F362949',4500],
+  ['2003 C320','WDBRF65J74F450614',4500],
+  ['2003 CL55','WDBPJ74J63A033248',3100],
+  ['2003 E320','WDBUF65JX3A140462',9350],
+  ['2003 E320','WDBUF65J93A202952',9350],
+  ['2003 E500','WDBUF70J43A324633',16300],
+  ['2003 E500','WDBUF70J43A193087',16300],
+  ['2003 G500','WDCYR49E43X139651',8750],
+  ['2003 G55','WDCYR46E03X138002',9750],
+  ['2004 C240','WDBRH61J35F617079',2250],
+  ['2004 CLK320','WDBTK65G64T017811',13050],
+  ['2004 E500 4Matic','WDBUH83J74X165018',4250],
+  ['2004 E55','WDBUF76J44A500721',7700],
+  ['2004 E55','WDBUF76J14A520103',7700],
+  ['2004 E55','WDBUF76J25A713474',7700],
+  ['2004 G500','WDCYR49E64X144609',6700],
+  ['2004 ML350 722.6','4JGAB57E85A546152',2550],
+  ['2004 S430','WDBNG70J14A392343',10400],
+  ['2004 S500','WDBNG75J84A408420',9150],
+  ['2004 S500','WDDNG71XX7A081945',9150],
+  ['2004 SL500','WDBSK75F14F069404',25600],
+  ['2004 SL500','WDBSK75F34F068142',25600],
+  ['2004 SL500','WDBSK75F54F067994',25600],
+  ['2004 Sprinter 2500','SB0PD744155820209',12600],
+  ['2004 Sprinter 2500','WD5WD142235570025',12600],
+  ['2004 maybach 57','WDBVF78J75A000961',2550],
+  ['2005 CL 65','WDBPJ79J55A046097',7300],
+  ['2005 CL55','WDDDJ76X16A014140',5000],
+  ['2005 CLK 500 9 series','WDBTK75G65T051979',16443.4],
+  ['2005 CLK 500 9 series','WDBTK72G87T077331',16443.4],
+  ['2005 CLK 500 9 series','WDBTK75J75F128885',16443.4],
+  ['2005 CLK320','WDBTJ65J35F148192',6750],
+  ['2005 CLK320','WDBTK65J75F137208',6750],
+  ['2005 E320  CDI','WDBUF26J86A843814',2750],
+  ['2005 E320 CDI','WDBUF26J45A748150',4750],
+  ['2005 E350','WDBUF56J56A752095',1950],
+  ['2005 E350','WDBUF56X78B195319',1950],
+  ['2005 E500','WDBUF70J15A819343',4050],
+  ['2005 E55 AMG','WDBUF76J66A824546',30165],
+  ['2005 E55 AMG','WDBUF76J35A747276',30165],
+  ['2005 E55 AMG','WDBUF76JX5A775267',30165],
+  ['2005 G500','WDCYR49E75X160738',8250],
+  ['2005 G500','WDB4633301716631',8250],
+  ['2005 G55 AMG','WDCYR71E95X156901',2750],
+  ['2005 S430','WDBNG70J74A433770',15200],
+  ['2005 S430','WDBNG70J95A440978',15200],
+  ['2005 S500','WDBNG75J45A452545',10950],
+  ['2005 S500','WDBNG75J56A476399',10950],
+  ['2005 S500','WDBNG75JX6A476964',10950],
+  ['2005 S500 4Matic','WDBNG84JX5A450998',2550],
+  ['2005 S55','WDBNG74J05A453371',13900],
+  ['2005 S55','WDBNG74J75A437359',13900],
+  ['2005 S55','WDBNG74J25A452657',13900],
+  ['2005 SL 500','WDBSK75F44F077335',650],
+  ['2005 SL 500','WDBSK75F05F106864',650],
+  ['2005 SL500','WDBSK75F95F105907',24450],
+  ['2005 SL500','WDBSK75F15F096524',24450],
+  ['2005 SL500','WDBSK75F44F077335',24450],
+  ['2005 SL55','WDBSK74F15F100234',7000],
+  ['2005 SL600','WDBSK79F66F108730',2550],
+  ['2005 SLK350','WDBWK56FX5F025181',8550],
+  ['2005 SLK350','WDBWK56F65F039630',8550],
+  ['2005 SLK350','WDBWK56F35F043330',8550],
+  ['2005 SPRINTER 2500','WD2PD644355753274',24350],
+  ['2005 SPRINTER 2500','WD2PD544955752298',24350],
+  ['2005 SPRINTER 2500','WD8PD644055842807',24350],
+  ['2006 C230','WDBRF52H87E023981',16050],
+  ['2006 C230','WDBRF52H67F855569',16050],
+  ['2006 CL500','WDBPJ75J66A047914',11050],
+  ['2006 CL500','WDDDJ75X96A017336',11050],
+  ['2006 CL500','WDDDJ75X66A014815',11050],
+  ['2006 CL65','WDBPJ79J86A047794',2550],
+  ['2006 CLK350','WDBTK56HX6F190282',4950],
+  ['2006 CLK350','WDBTK56G16T066605',4950],
+  ['2006 CLK350','WDBTK56H66F195141',4950],
+  ['2006 CLK500','WDBTK75G86T056876',16050],
+  ['2006 CLK500','WDBTK75G66T060831',16050],
+  ['2006 CLK500','WDBTK75G66T061574',16050],
+  ['2006 CLS500','WDDDJ75XX6A060342',33950],
+  ['2006 CLS500','WDDDJ75X66A066199',33950],
+  ['2006 CLS500','WDDDJ75X76A016346',33950],
+  ['2006 CLS55 AMG','WDDDJ76X86A034241',4500],
+  ['2006 E320 CDI','WDBUF26J26A981168',5000],
+  ['2006 E350','WDBUF56J96A876273',37250],
+  ['2006 E350','WDBUF56J76A788824',37250],
+  ['2006 E350','WDBUF56J86A846780',37250],
+  ['2006 E500','WDBUF70J26A879309',2600],
+  ['2006 E55','WDBUF76J96A843432',28150],
+  ['2006 E55','WDBUF76J96A919439',28150],
+  ['2006 E550','WDBUF72X37B022509',650],
+  ['2006 ML350','4JGBB75E06A028198',31551],
+  ['2006 ML350','4JGCB65E06A026515',31551],
+  ['2006 ML350','4JGBB86EX6A118463',31551],
+  ['2006 ML500','4JGBB75E36A042337',14801],
+  ['2006 ML500','4JGBB75E76A015450',14801],
+  ['2006 ML500','4JGBB75E96A0070060',14801],
+  ['2006 R350','4JGCB65E36A009563',18000],
+  ['2006 R350','4JGCB65E16A023087',18000],
+  ['2006 R350','4JGCB65E96A013035',18000],
+  ['2006 R500','4JGCB75E36A030404',22700],
+  ['2006 R500','4JGCB75E86A032066',22700],
+  ['2006 R500','4JGCB75E56A026709',22700],
+  ['2006 S 430','WDBNG70JX6A471691',500],
+  ['2006 S430','WDBNG70JX6A471691',650],
+  ['2006 S500','WDDNG71X87A033912',14650],
+  ['2006 S500','WDDNG71XX7A041302',14650],
+  ['2006 S500','WDBNG75J36A470388',14650],
+  ['2006 SL 500','WDBSK75F36F111140',17750],
+  ['2006 SL 500','WDBSK75F66F108507',17750],
+  ['2006 SL 500','WDBSK75F56F107641',17750],
+  ['2006 SLK 350','WDBWK56F96F125032',900],
+  ['2006 SLK280','WDBWK54F16F080378',7700],
+  ['2006 SLK280','WDBWK54F86F107351',7700],
+  ['2006 SLK280','WDBWK54F77F143792',7700],
+  ['2006 SLK55 AMG','WDBWK73F86F120064',650],
+  ['2006 SPRINTER 2500','WD0PD144065901359',26850],
+  ['2006 SPRINTER 2500','WD8PD144165892538',26850],
+  ['2006 Sprinter 3500','WDXPD944465892469',8550],
+  ['2007 C230','WDBRF52H07F934784',19400],
+  ['2007 C230','WDBRF52HX7F902103',19400],
+  ['2007 C230','WDBRF52H67F928424',19400],
+  ['2007 C280','WDBRF54H97F883900',3750],
+  ['2007 CL500','WDDEJ71X57A005874',8900],
+  ['2007 CL500','WDDEJ71X37A001841',8900],
+  ['2007 CLK350','WDBTK56F97T082348',17100],
+  ['2007 CLK350','WDBTK56F17F214288',17100],
+  ['2007 CLK500','WDDKK7CF6BF074735',8150],
+  ['2007 CLK500','WDBTJ72H77F214981',8150],
+  ['2007 CLK500','WDBTK75J95F130959',8150],
+  ['2007 CLK63','WDBTK77G67T080480',3950],
+  ['2007 CLS 500','WDDDJ72X17A101186',3400],
+  ['2007 CLS550','WDDDJ72X77A086631',13300],
+  ['2007 CLS550','WDDDJ72X87A103372',13300],
+  ['2007 CLS550','WDDDJ72X27A083345',13300],
+  ['2007 CLS63','WDDDJ77XX7A096689',12400],
+  ['2007 E320 Diesel','WDBUF22X07B092875',1750],
+  ['2007 E320 Diesel','WDBUF22X37B075651',1750],
+  ['2007 E350','WDBUF56X67B063148',50400],
+  ['2007 E350','WDBUF56X37B180444',50400],
+  ['2007 E350','WDBUF56X37B029913',50400],
+  ['2007 E550','WDBUF72X29B393275',1300],
+  ['2007 E63','WDBUF77X37B138169',21500],
+  ['2007 GL 450','4JGBF71E27A148550',26600],
+  ['2007 GL 450','4JGBF71E77A171662',26600],
+  ['2007 GL 450','4JGBF71E57A283666',26600],
+  ['2007 ML 350','4JGBB86E07A172629',14035],
+  ['2007 ML 350','4JGBB86E87A254205',14035],
+  ['2007 ML 350','4JGBB22E37A209269',14035],
+  ['2007 ML320 CDI','4JGBB22E37A209269',12150],
+  ['2007 S430','WDBNG70J74A433770',650],
+  ['2007 S550','WDDNG71X27A058983',159483.08000000002],
+  ['2007 S550','WDDNG71X08A170201',159483.08000000002],
+  ['2007 S550','WDDNG71X67A104864',159483.08000000002],
+  ['2007 S550 4MATIC','WDDHF9AB6AA098801',30050],
+  ['2007 S550 4MATIC','WDDNG86X07A110531',30050],
+  ['2007 S550 4MATIC','WDDNG86X97A105683',30050],
+  ['2007 S600','WDDNG76X97A030235',12051],
+  ['2007 S600','WDDNG76X57A088889',12051],
+  ['2007 SL 550','WDBSK71F17F129787',34050],
+  ['2007 SL 550','WDBSK71FX7F126189',34050],
+  ['2007 SL 550','WDBSK71F47F128049',34050],
+  ['2007 SLK 280','WDBWK54F97F155233',950],
+  ['2007 Sprinter 2500','WD0PE845175196037',17450],
+  ['2008 C300','WDDGF54X28F060880',16550],
+  ['2008 C300','WDDGF54X58R026236',16550],
+  ['2008 C350','WDDGF56X18F104879',6400],
+  ['2008 CL 550','WDDEJ71X38A014557',451],
+  ['2008 E320 CDI','WDBUF22XX9B368935',3000],
+  ['2008 E350','WDBUF56XX8B359341',22250],
+  ['2008 E350','WDBUF56X58B302917',22250],
+  ['2008 E350','WDBUF56X38B320543',22250],
+  ['2008 E350 4Matic 722.676','WDBUF87X38B353770',2750],
+  ['2008 G55','WDCYR71E28X175861',2550],
+  ['2008 GL320 CDI','4JGBF22EX8A412424',15500],
+  ['2008 GL550','4JGBF86E38A420958',9500],
+  ['2008 ML 320 CDI','4JGBF22E38A438511',6250],
+  ['2008 ML 63','4JGBB77E68A332474',6000],
+  ['2008 Maybach 62S','WDBVF78J05A001420',2800],
+  ['2008 R350','4JGCB65E99A091108',9000],
+  ['2008 S500 4Matic','WDDNG86X48A218992',15750],
+  ['2008 S550','WDDNG86X38A190215',37805.72],
+  ['2008 S550','WDDNG71X28A197755',37805.72],
+  ['2008 S63','WDDNG77X58A143017',7250],
+  ['2008 SPRINTER 2500','WD0PE845X85305046',40850],
+  ['2008 SPRINTER 2500','WD0PF445985260462',40850],
+  ['2008 SPRINTER 2500','WD0PE845X75198014',40850],
+  ['2008 Sprinter 3500','WD0PE845885234591',6800],
+  ['2008 clk500','WDBTK72F68T099692',3650],
+  ['2008 cls 63','WDDDJ77XX8A121141',3000],
+  ['2009 E350','WDBUF56XX9B423816',15750],
+  ['2009 E350','WDBUF56X89B423152',15750],
+  ['2009 E63','WDBUH77X48B312696',5750],
+  ['2009 E63','WDBUF77X28B206964',5750],
+  ['2009 G55 AMG','WDCYR71E99X178743',2550],
+  ['2009 GL320 CDI','4JGBF25E19A482777',500],
+  ['2009 GL450','4JGBF71E29A515434',4300],
+  ['2009 S550 4Matic','WDDNG86X09A279421',3650],
+  ['2009 S63 AMG','WDDNG7HBXAA288045',2900],
+  ['2009 SL63 AMG','WDBSK70F49F157040',550],
+  ['2009 c300','WDDGF54XX8F015105',8750],
+  ['2010 CLS 500','WDDDJ7CBXBA172740',13100],
+  ['2010 CLS 500','WDDDJ7CB44A164552',13100],
+  ['2010 CLS 500','WDDDJ7CB4AA164552',13100],
+  ['2010 E350','WDDHF5GBXBA307328',16519.33],
+  ['2010 E350','WDDKJ5GB4AF051824',16519.33],
+  ['2010 E350 4Matic','WDDHF8HB8AA196664',8750],
+  ['2010 E550','WDDKJ7CB5BF069171',15650],
+  ['2010 E550','WDDKJ7CB9AF040058',15650],
+  ['2010 E550','WDDKJ7CB4AF026276',15650],
+  ['2010 E63 AMG','WDDHH7EB1CA639474',3000],
+  ['2010 G500','WDCYR49E75X163820',2550],
+  ['2010 GL 450','4JGBF7BE7AA546214',4050],
+  ['2010 GLK 350','WDCGG5GB4AF500847',27450],
+  ['2010 GLK 350','WDCGG5GB5AF441582',27450],
+  ['2010 GLK 350','WDCGG5GB3BF536840',27450],
+  ['2010 GLK 350 4Matic','WDDHF8HB8AA196664',3000],
+  ['2010 ML 350 Diesel','4JGBB2FB5AA620714',4150],
+  ['2010 ML350','4JGBB8GB1BA629638',5975],
+  ['2010 ML350','4JGBB5GB5AA598584',5975],
+  ['2010 ML350','4JGBB8GB5AA593919',5975],
+  ['2010 S500 4Matic','WDDNG8GB7AA352999',650],
+  ['2010 S550 4Matic','WDDNG8GBXAA321293',6650],
+  ['2010 S550 4Matic','WDDNG8GB8AA352347',6650],
+  ['2011 C250','WDDGF4HB5CR195495',1300],
+  ['2011 C300','WDDGF5EB9BR178918',6800],
+  ['2011 E350','WDDKJ5GB6BF102631',21900],
+  ['2011 E350','WDDKJ5KB7CF133475',21900],
+  ['2011 E350','WDDHF5GB8BA354101',21900],
+  ['2011 GL450','4JGBF7BE8BA685043',1200],
+  ['2011 GLK 350','WDCGG5GBXBF549830',33700],
+  ['2011 GLK 350','WDCGG5GB4BF550195',33700],
+  ['2011 GLK 350','WDCGG8HB3BF547773',33700],
+  ['2011 ML350','4JGBB8GB8BA732930',3000],
+  ['2011 S550','WDDNG7BB7BA397850',3400],
+  ['2011 S550 4Matic','WDDNF9EB6CA421373',9500],
+  ['2011 SPRINTER','WDAPF3CCXB9464709',30600],
+  ['2011 SPRINTER','WD3PE8CB8B5591397',30600],
+  ['2011 SPRINTER','WD3PF4CC4B5512953',30600],
+  ['2011 e350 4Matic','WDDHF8HBXBA346159',1800],
+  ['2011 e350 4Matic','WDDHF8HB4BA454258',1800],
+  ['2011 e350 4Matic','WDDHH8HB4BA298507',1800],
+  ['2012 C250','WDDGF4HB5CR223036',16527.6],
+  ['2012 C250','WDDGF4HB8CR222365',16527.6],
+  ['2012 C250','WDDGF4HB0CR217130',16527.6],
+  ['2012 C300 4Matic','WDDGF8BB3CF874604',11750],
+  ['2012 C350','WDDGF5HB5CR202189',3000],
+  ['2012 CLS 500','WDDLJ9BB1CA046440',650],
+  ['2012 E350 4Matic','WDDHF8JB9CA625212',16750],
+  ['2012 E350 4Matic','WDDHF8JB2CA659377',16750],
+  ['2012 GL550 4Matic','4JGBF8GE5CA767750',650],
+  ['2012 GLE350 4Matic','4JGDA5HB0CA026769',3000],
+  ['2012 GLK 350','WDCGG5GBXCF926190',32150],
+  ['2012 GLK 350','WDCGG5GB8CF782025',32150],
+  ['2012 GLK 350','WDCGG8HB7CF784123',32150],
+  ['2012 ML350','4JGDA5HB8CA015146',14144],
+  ['2012 ML350','4JGDA5HBXCA031431',14144],
+  ['2012 ML350','4JGDA5HB1CA083742',14144],
+  ['2012 S500','WDDNG7DB2CA452302',3650],
+  ['2012 S500','WDDNG7DB9CA435903',3650],
+  ['2012 Sprinter 2500','WD4PE7CC6B5542925',71400],
+  ['2012 Sprinter 2500','WDZPE8CC5C5641057',71400],
+  ['2012 Sprinter 2500','WD3PF4CC1C5639290',71400],
+  ['2012 e350','WDDHF5KB2CA605915',57950],
+  ['2012 e350','WDDHF5KB8DA696531',57950],
+  ['2012 e350','WDDHF5KB6DA697421',57950],
+  ['2013 C250','WDDGF4HB7DA800469',9650],
+  ['2013 C250','WDDGF4HB5DA776642',9650],
+  ['2013 C250','WDDGF4HB9DA811845',9650],
+  ['2013 C300 4Matic','WDDGF8ABXDA832009',13500],
+  ['2013 C350','WDDGF5HB6DA840919',6000],
+  ['2013 E350','WDDHF5KB3DA746042',52900],
+  ['2013 E350','WDDHF5KB2DA721178',52900],
+  ['2013 E350','WDDHF5KB2DA767142',52900],
+  ['2013 E350 4matic','WDDHF8JB3DA680921',12000],
+  ['2013 E350 4matic','WDDHF8JB0DA700820',12000],
+  ['2013 G550','WDCYC3HF7DX206413',8700],
+  ['2013 G550','WDCYC3HF7DX207254',8700],
+  ['2013 ML350','4JGDA5HB2DA171958',15200],
+  ['2013 ML350','4JGDA5HB0DA108387',15200],
+  ['2013 S550','WDDNG7DB1DA537536',3000],
+  ['2013 S550 4Matic','WDDNG9EB5DA502668',14750],
+  ['2013 glk 4Matic','WDCGG8JB9DG100226',7250],
+  ['2014 C350 e','55SWF4HB7HU229308',2350],
+  ['2014 E350','WDDHF5KB7EA923953',34175.78],
+  ['2014 E350','WDDHF8JB2EA937391',34175.78],
+  ['2014 E350','WDDHF5KB7EA901015',34175.78],
+  ['2014 E350 4Matic','WDDHF8JBXEA884391',3000],
+  ['2014 G63 AMG','WDCYC7DFXEX221146',550],
+  ['2014 GLE350','4JGDA5JB6FA475131',3000],
+  ['2014 GLK350','WDCGG8JB8EG156577',3000],
+  ['2014 S550','WDDUG8CB1FA113179',3500],
+  ['2014 S63','WDDUG7JB0EA041502',11000],
+  ['2014 S63','WDDUG7JB1EA033439',11000],
+  ['2014 Sprinter','WDYPE7DC3E5895544',11250],
+  ['2014 c300','55SWF4JB8JU252368',7250],
+  ['2015 G550','WDCYC3HF6FX231659',3000],
+  ['2015 GL450','4JGDF6EE5FA594364',3950],
+  ['2015 GL450','4JGDF7DE1FA512895',3950],
+  ['2015 GLA 250 4Matic','WDCTG4GB0FJ094613',1562],
+  ['2015 GLK 350 4Matic','WDCGG8JBXFG439418',1250],
+  ['2015 Sprinter 3500','WDZPE8CC4FP161262',16550],
+  ['2015 Sprinter 3500','WD3PE8CC4FP114680',16550],
+  ['2015 Sprinter 3500','WD3PE8CC6FP133957',16550],
+  ['2016 C300 4Matic','55SWF4KB3GU146742',3000],
+  ['2016 CLA 250','WDDSJ4EB1GN362106',3460],
+  ['2016 E300','WDDZF4JB8HA057040',1850],
+  ['2016 E300','WDDZF4JB4HA072974',1850],
+  ['2016 GLC300','WDC0G4JBXGF014704',3215],
+  ['2016 ML350 4Matic','4JGDA5HB1GA714012',1511],
+  ['2016 Sprinter','8BTPE7CD8GE132534',16800],
+  ['2016 Sprinter','WD3PE8CD2GP317089',16800],
+  ['2016 Sprinter','WD3PE7DD5GP322005',16800],
+  ['2017 C43 AMG 4Matic','WDDWJ6EB2JF636895',1850],
+  ['2017 E400','WDDKJ6HB1HF355403',3000],
+  ['2017 GLC300','WDC0G4JB9HF191925',1500],
+  ['2017 GLS 450 4Matic','4JGDF6EE6HA775489',896.23],
+  ['2017 S63','WDDUG7JB1HA301197',3500],
+  ['2017 Sprinter','8BTPE7CD6GE127963',7350],
+  ['2017 Sprinter','WD3FE7CD2GP341298',7350],
+  ['2018 GLA 250 4Matic','WDCTG4GBXKJ546500',1730],
+  ['2018 GLC 300','WDC0G4JB8JV059461',1648.75],
+  ['2018 GLC 300','WDC0G4JB0JV099307',1648.75],
+  ['2018 GLC 300 4Matic','WDC0J4KB1JF461803',2030],
+  ['2018 GLC 300 4Matic','WDC0G4JB7JV050282',2030],
+  ['2018 ML350','4JGDA5JB4JB037808',3000],
+  ['2019 E300','WDDZF4JB9KA582079',1925],
+  ['2019 GLS 450','4JGDF6EE1KB228826',1885],
+  ['2020 Sprinter','W1Y4EBHY5LT028741',12000],
+  ['2020 Sprinter','W1W4EBVY4LT023091',12000],
+  ['2020 Sprinter','W1W4EBVY0KP200890',12000],
+  ['CORE CHARGE','WDDDJ75XX6A060342',412793.5599999999],
+  ['CORE CHARGE','4JGBB8GB8BA732930',412793.5599999999],
+  ['CORE CHARGE','WDDHF9AB6AA098801',412793.5599999999]
+];
+
+function findSalesMatches(prefix6) {
+  prefix6 = prefix6.toUpperCase().replace(/[\s\-]/g, '').substring(0, 6);
+  const seen = {};
+  const out = [];
+  for (const [model, vin, price] of SALES_DB) {
+    if (vin.substring(0, 6) === prefix6 && !seen[model]) {
+      seen[model] = true;
+      out.push({model, vin, price});
+    }
+  }
+  return out;
+}
+
+function renderSalesPanel(prefix6) {
+  const matches = findSalesMatches(prefix6);
+  const EMAIL = 'sunvalleymercedes@gmail.com';
+  let inner = '';
+  if (matches.length === 0) {
+    inner = '<p style="color:#6a8aaa;font-style:italic;padding:10px 0;">No records found for prefix <strong style=\'color:#c9a84c;\'>' + prefix6 + '</strong> in sales history.</p>';
+  } else {
+    inner = '<table class="sales-match-table"><thead><tr><th>Model</th><th>VIN</th><th>Price</th></tr></thead><tbody>' +
+      matches.map(function(m) {
+        var subj = encodeURIComponent('Transmisison inquiry - ' + m.model);
+        var bod  = encodeURIComponent('To: Sun Valley Mercedes Transmissions\n18453 Parthenia Pl.\nNorthridge, CA 91325\n818 782-2300\n\nI need a transmission for my ' + m.model + '. Please verify price and include shipping costs.\n\nCustomer Name: \nVehicle VIN: \nDestination Zip Code: \n\nThank you');
+        var href = 'mailto:' + EMAIL + '?subject=' + subj + '&body=' + bod;
+        var hi   = '<span class=\"match-highlight\">' + m.vin.substring(0,6) + '</span><span class=\"match-rest\">' + m.vin.substring(6) + '</span>';
+        return '<tr>' +
+          '<td><a href=\"' + href + '\" style=\"color:#c9a84c;font-weight:bold;text-decoration:underline;\">' + m.model + '</a></td>' +
+          '<td class=\"sales-match-vin\">' + hi + '</td>' +
+          '<td class=\"sales-match-price\">$' + m.price.toLocaleString() + '</td>' +
+          '</tr>';
+      }).join('') +
+    '</tbody></table>';
+  }
+  return '<div class=\"sales-panel\">' +
+    '<div class=\"sales-panel-title\">Sales History Match <span class=\"sales-match-count\">' + matches.length + '</span></div>' +
+    '<div class=\"sales-panel-sub\">First 6 VIN characters: <strong style=\"color:#c9a84c;\">' + prefix6 + '</strong> &middot; Click a model to email us</div>' +
+    inner + '</div>';
+}
+
+// Override input handler to trigger on 6+ chars
+(function() {
+  const inp = document.getElementById('vinInput');
+  const countEl = document.getElementById('charCount');
+  const errDiv = document.getElementById('errorMsg');
+  const results = document.getElementById('results');
+
+  inp.removeAttribute('maxlength');
+  inp.setAttribute('maxlength', '17');
+  inp.setAttribute('placeholder', 'Enter first 6+ characters');
+
+  inp.addEventListener('input', function() {
+    var v = this.value.toUpperCase().replace(/[^A-HJ-NPR-Z0-9]/gi, '');
+    this.value = v;
+    countEl.textContent = v.length;
+
+    if (v.length < 6) {
+      this.classList.remove('valid','invalid');
+      errDiv.style.display = 'none';
+      results.style.display = 'none';
+      return;
+    }
+
+    this.classList.add('valid');
+    errDiv.style.display = 'none';
+
+    if (v.length < 17) {
+      // 6-16 chars: show sales panel only
+      results.innerHTML = renderSalesPanel(v.substring(0,6));
+      results.style.display = 'block';
+      results.scrollIntoView({behavior:'smooth', block:'nearest'});
+    } else {
+      // 17 chars: run full decode (existing decodeVIN)
+      decodeVIN();
+    }
+  }, true);
+
+  // Also re-add the Enter key handler
+  inp.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter') {
+      if (this.value.length >= 17) decodeVIN();
+      else if (this.value.length >= 6) {
+        results.innerHTML = renderSalesPanel(this.value.substring(0,6));
+        results.style.display = 'block';
+      }
+    }
+  }, true);
+})();
+</script>
+
+
+<script>
+var EDITED_PRICES = {};
+
+var PRICE_DB={
+  '1010 E350 4Matic':400,
+  '1959 300d':3500,
+  '1960 300d':3650,
+  '1963 220S':2550,
+  '1963 300SE/C':2250,
+  '1964 220SE':3100,
+  '1964 230SL':2250,
+  '1965 220S':2250,
+  '1965 220SE':4500,
+  '1965 230SL':7650,
+  '1965 300SE/C':3000,
+  '1966 230':3000,
+  '1966 230SL':8100,
+  '1966 250SE':2250,
+  '1966 300SE':8000,
+  '1967 230':2750,
+  '1967 250S':2550,
+  '1967 250SE/C':2250,
+  '1967 250SL':3000,
+  '1968 280S':8100,
+  '1968 280SE':14650,
+  '1968 280SL':7800,
+  '1968 300SEL 6':2250,
+  '1969 230':2550,
+  '1969 280SE':5000,
+  '1969 280SE/C':2750,
+  '1969 280SL':8100,
+  '1969 300SEL':450,
+  '1969 300SEL 6':3000,
+  '1970 250':2500,
+  '1970 250C':2000,
+  '1970 280S':500,
+  '1970 280SE':10000,
+  '1970 280SL':4800,
+  '1971 250':4475,
+  '1971 250C':5000,
+  '1971 280SE':8850,
+  '1971 280SE 3.5':30300,
+  '1971 280SL':109105,
+  '1971 300SEL 6.3':25200,
+  '1971 600':7000,
+  '1972 250':2000,
+  '1972 250C':2250,
+  '1972 280SE4.5':20250,
+  '1972 300SEL 4.5':4550,
+  '1972 350SL':5700,
+  '1973 280':2750,
+  '1973 280C':4300,
+  '1973 350SL':2250,
+  '1973 450SE':1750,
+  '1973 450SEL':2000,
+  '1973 450SL':28434.97,
+  '1974 280':2250,
+  '1974 280C':2000,
+  '1974 450SEL':1750,
+  '1974 450SL':8850,
+  '1974 450SLC':1750,
+  '1975 240D':4800,
+  '1975 280':1200,
+  '1975 300D':2600,
+  '1975 450SL':13500,
+  '1976 280S':2250,
+  '1976 300D':2000,
+  '1976 450SL':10500,
+  '1976 450SLC':2750,
+  '1977 230':2550,
+  '1977 240D':500,
+  '1977 280SE':1750,
+  '1977 300D':10750,
+  '1977 450SL':12300,
+  '1978 240D':4750,
+  '1978 280E':35,
+  '1978 300D':2000,
+  '1978 300SD':550,
+  '1978 450SEL':3750,
+  '1978 450SL':56400,
+  '1979 240D':350,
+  '1979 300D':2250,
+  '1979 300SD':17200,
+  '1979 300TD':2100,
+  '1979 450SL':22250,
+  '1979 450SLC':1750,
+  '1980 240D':3700,
+  '1980 280CE':2250,
+  '1980 300CD':1750,
+  '1980 300D':4000,
+  '1980 300SD':6550,
+  '1980 450SL':20100,
+  '1981 240D':8885,
+  '1981 280SE':1500,
+  '1981 300D':8300,
+  '1981 300SD':2825,
+  '1981 300TD':2000,
+  '1981 380SL':9800,
+  '1981 500SL':2250,
+  '1981 Porsche 928':3000,
+  '1982 240D':7250,
+  '1982 280SE':2250,
+  '1982 300CD':7500,
+  '1982 300D':21300,
+  '1982 300SD':17300,
+  '1982 300TD':20975,
+  '1982 380SL':6800,
+  '1983 240D':7500,
+  '1983 300CD':7300,
+  '1983 300D':18900,
+  '1983 300SD':19900,
+  '1983 300TD':12375,
+  '1983 380SL':27650,
+  '1983 500SEL':2250,
+  '1983 928':2750,
+  '1984 230GE':2750,
+  '1984 280GE':2550,
+  '1984 300CD':3750,
+  '1984 300D':15625,
+  '1984 300SD':5500,
+  '1984 300TD':2700,
+  '1984 300d Euro':1750,
+  '1984 380SL':17250,
+  '1984 500SE/C':4500,
+  '1984 500SL':2550,
+  '1985 190D 2.2':3250,
+  '1985 190E 2.3':1750,
+  '1985 280GE':1750,
+  '1985 300CD':4250,
+  '1985 300D':13150,
+  '1985 300SD':4625,
+  '1985 300TD':10625,
+  '1985 380SE/C':1750,
+  '1985 380SL':16225,
+  '1985 500SE/C':2000,
+  '1985 500SEL':9750,
+  '1985 500SL':7350,
+  '1986 190E':1750,
+  '1986 190E 16V':2250,
+  '1986 190E 2.3':6750,
+  '1986 300E':7650,
+  '1986 300SDL':3875,
+  '1986 420SEL':6550,
+  '1986 560SE/C':3250,
+  '1986 560SEC':9550,
+  '1986 560SEL':6300,
+  '1986 560SL':26850,
+  '1986 928':7650,
+  '1987 190D 2.5':4375,
+  '1987 260E':2250,
+  '1987 280 GE':2250,
+  '1987 300D':9050,
+  '1987 300E':3750,
+  '1987 300SDL':17750,
+  '1987 300TD':5450,
+  '1987 420SEL':7850,
+  '1987 560SE/C':7700,
+  '1987 560SEL':4250,
+  '1987 560SL':25550,
+  '1988 190E 2.6':150,
+  '1988 260E':1500,
+  '1988 300E':10925,
+  '1988 300SE':8300,
+  '1988 300SEL':4200,
+  '1988 420SEL':10000,
+  '1988 560SE/C':9500,
+  '1988 560SEL':11600,
+  '1988 560SL':64575,
+  '1988 928':1750,
+  '1989 190D 2.5':1500,
+  '1989 190E 2.6':2825,
+  '1989 260E':1750,
+  '1989 300E':1750,
+  '1989 300SE':12000,
+  '1989 300SEL':9250,
+  '1989 300TE':4625,
+  '1989 420SEL':5250,
+  '1989 560SE/C':10000,
+  '1989 560SEL':5750,
+  '1989 560SL':45000,
+  '1990 190E 2.6':1750,
+  '1990 300D 2.5':1750,
+  '1990 300E':6500,
+  '1990 300E 4 MATIC':3500,
+  '1990 300SE':6250,
+  '1990 300SEL':3125,
+  '1990 300SL':2250,
+  '1990 300TE':3000,
+  '1990 350SDL':2250,
+  '1990 420SEL':350,
+  '1990 560SE/C':6600,
+  '1990 560SEL':13750,
+  '1991 190E 2.6':1700,
+  '1991 300CE':4250,
+  '1991 300D 2.5':6550,
+  '1991 300E':9500,
+  '1991 300E 2.6':1750,
+  '1991 300E 4MATIC TRANSFER CASE':5750,
+  '1991 300GE':2250,
+  '1991 300SEL':9350,
+  '1991 300SL':8350,
+  '1991 300TE':3500,
+  '1991 300TE 4':6250,
+  '1991 300TE 4 MATIC':4500,
+  '1991 350SD':9000,
+  '1991 350SDL':6000,
+  '1991 420SEL':8625,
+  '1991 500SL':4500,
+  '1991 560SE/C':15700,
+  '1991 560SEL':6250,
+  '1992 190E 2.3':2000,
+  '1992 190E 2.6':1250,
+  '1992 250D':2000,
+  '1992 300D 2.5':12400,
+  '1992 300E':1500,
+  '1992 300E 2.6':3250,
+  '1992 300E 4MATIC TRANSFER CASE':150,
+  '1992 300GE':2550,
+  '1992 300SD':1750,
+  '1992 300SE':6750,
+  '1992 300SL':2250,
+  '1992 300TE':2000,
+  '1992 300TE 4MATIC':375,
+  '1992 300TE 4MATIC TRANSFER CASE':250,
+  '1992 400E':7500,
+  '1992 400SE':3750,
+  '1992 500E':14800,
+  '1992 500SEL':2000,
+  '1992 500SL':6800,
+  '1992 G350':7550,
+  '1993 190E 2.6':6800,
+  '1993 300CE':8000,
+  '1993 300CE Cabriolet':2550,
+  '1993 300D 2.5':5800,
+  '1993 300E':2125,
+  '1993 300E 2.8':10100,
+  '1993 300GE':2250,
+  '1993 300SD':6500,
+  '1993 300SE':2750,
+  '1993 300SL':2250,
+  '1993 300TE':2000,
+  '1993 300TE 4MATIC':2550,
+  '1993 300TE 4MATIC TRANSFER CASE':7750,
+  '1993 400E':20000,
+  '1993 400SEL':4500,
+  '1993 500E':9400,
+  '1993 500SL':3500,
+  '1993 600SE/C':2250,
+  '1993 600SL V-12':1750,
+  '1993 E320':12500,
+  '1994 290GD':2550,
+  '1994 420SEL':1750,
+  '1994 500E':2000,
+  '1994 C220':2250,
+  '1994 CL500':2250,
+  '1994 E320':31775,
+  '1994 E420':6300,
+  '1994 E500':1750,
+  '1994 S 500':1750,
+  '1994 S320':2900,
+  '1994 S420':2550,
+  '1994 S600':2000,
+  '1994 SL320':2700,
+  '1994 SL500':9000,
+  '1994 SL600':4950,
+  '1995 500E':9550,
+  '1995 C220':1500,
+  '1995 C280':8300,
+  '1995 C36':4800,
+  '1995 E300D':10125,
+  '1995 E320':103950,
+  '1995 E420':5850,
+  '1995 E500':5750,
+  '1995 G320':2550,
+  '1995 G350D':1500,
+  '1995 S320':16050,
+  '1995 S420':1750,
+  '1995 S500':13275,
+  '1995 S600':2250,
+  '1995 SL320':11500,
+  '1995 SL500':19900,
+  '1995 SL600':2000,
+  '1996 350GD':2750,
+  '1996 C220':2000,
+  '1996 C230':2550,
+  '1996 C280':2000,
+  '1996 S320':4100,
+  '1996 SL320':10550,
+  '1996 SL500':7350,
+  '1996 s600':2213.5,
+  '1997 C230':4500,
+  '1997 C280':2250,
+  '1997 E300D':4550,
+  '1997 E320':8300,
+  '1997 E420':6750,
+  '1997 S320':2250,
+  '1997 S420':3100,
+  '1997 S500':9300,
+  '1997 SL500':6550,
+  '1997 SL600':2550,
+  '1998 C230':4000,
+  '1998 C43':2550,
+  '1998 E300D':2610,
+  '1998 E320':11200,
+  '1998 E320 4 MATIC':2250,
+  '1998 E420':2550,
+  '1998 E430':4800,
+  '1998 E55 AMG':2000,
+  '1998 ML 320':7050,
+  '1998 S320':2750,
+  '1998 S420':4500,
+  '1998 S500':450,
+  '1998 SL 500':13900,
+  '1998 SL600':2000,
+  '1998 SLK230':2250,
+  '1999 C280':2250,
+  '1999 C43':5050,
+  '1999 CL500':5100,
+  '1999 CLK320':2250,
+  '1999 CLK430':4250,
+  '1999 E300D':9800,
+  '1999 E320':2550,
+  '1999 E320 4MATIC WAGON':5450,
+  '1999 E430':550,
+  '1999 G500':2250,
+  '1999 ML430':4250,
+  '1999 S320':6750,
+  '1999 S420':4500,
+  '1999 S500':2000,
+  '1999 SL500':6500,
+  '1999 SL600':2000,
+  '1999 SLK 230':2000,
+  '2000 C280':2550,
+  '2000 E320':6850,
+  '2000 E320 4 MATIC':500,
+  '2000 E430':2000,
+  '2000 G500':4500,
+  '2000 ML320':6390,
+  '2000 ML430':2250,
+  '2000 S430':5300,
+  '2000 S500':4800,
+  '2000 SL500':4500,
+  '2000 SL600':2500,
+  '2000 cl500':5257.71,
+  '2001 C230':2250,
+  '2001 CLK55':2250,
+  '2001 E320':4250,
+  '2001 E320 4Matic':5750,
+  '2001 ML320':550,
+  '2001 S430':5050,
+  '2001 SLK 320':2500,
+  '2001 e430':4250,
+  '2002 C230':2000,
+  '2002 C230 4Matic':2250,
+  '2002 C32':4000,
+  '2002 CLK320':5000,
+  '2002 CLK430':4250,
+  '2002 CLK55':3750,
+  '2002 E320':11300,
+  '2002 E320 4Matic':6700,
+  '2002 E430':2250,
+  '2002 E55':4500,
+  '2002 G400 CDI':2500,
+  '2002 G500':7000,
+  '2002 ML500':2000,
+  '2002 S430':2000,
+  '2002 S500':4800,
+  '2002 S55':2500,
+  '2002 SL500':3000,
+  '2002 Sprinter 2500':15750,
+  '2003 C230':4500,
+  '2003 C320':4500,
+  '2003 CL55':3100,
+  '2003 CLK320':2000,
+  '2003 CLK500':2000,
+  '2003 E320':9350,
+  '2003 E500':16300,
+  '2003 E55':2000,
+  '2003 G500':8750,
+  '2003 G55':9750,
+  '2003 Jaguar':2250,
+  '2003 S430':450,
+  '2003 S500 4MATIC':2000,
+  '2003 S55':2250,
+  '2003 S600':4250,
+  '2003 SL500':2250,
+  '2003 SL55 AMG':550,
+  '2003 c240':4000,
+  '2003 ml350':2250,
+  '2004 C230':4250,
+  '2004 C240':2250,
+  '2004 C320':6750,
+  '2004 C55':2000,
+  '2004 CL500':1300,
+  '2004 CLK320':13050,
+  '2004 CLK55':4250,
+  '2004 E320':2700,
+  '2004 E320 4Matic':2250,
+  '2004 E320 CDI':500,
+  '2004 E500':8150,
+  '2004 E500 4Matic':4250,
+  '2004 E55':7700,
+  '2004 G500':6700,
+  '2004 ML350 722.6':2550,
+  '2004 ML500':5000,
+  '2004 S430':10400,
+  '2004 S500':9150,
+  '2004 S55':4500,
+  '2004 SL500':25600,
+  '2004 Sprinter 2500':12600,
+  '2004 maybach 57':2550,
+  '2005 C55 AMG':2000,
+  '2005 CL 65':7300,
+  '2005 CL500':3400,
+  '2005 CL55':5000,
+  '2005 CLK 500':9650,
+  '2005 CLK 500 9 series':16443.4,
+  '2005 CLK320':6750,
+  '2005 CLS 500':2750,
+  '2005 CLS 55':4250,
+  '2005 CLS500':2800,
+  '2005 E320  CDI':2750,
+  '2005 E320 CDI':4750,
+  '2005 E350':1950,
+  '2005 E500':4050,
+  '2005 E55 AMG':30165,
+  '2005 G500':8250,
+  '2005 G55 AMG':2750,
+  '2005 ML350':650,
+  '2005 ML500':650,
+  '2005 S430':15200,
+  '2005 S500':10950,
+  '2005 S500 4Matic':2550,
+  '2005 S55':13900,
+  '2005 S600':2000,
+  '2005 SL 500':650,
+  '2005 SL500':24450,
+  '2005 SL55':7000,
+  '2005 SL600':2550,
+  '2005 SLK350':8550,
+  '2005 SPRINTER 2500':24350,
+  '2005 SPRINTER 3500':2000,
+  '2006 C230':16050,
+  '2006 CL500':11050,
+  '2006 CL65':2550,
+  '2006 CLK350':4950,
+  '2006 CLK500':16050,
+  '2006 CLS500':33950,
+  '2006 CLS55 AMG':4500,
+  '2006 E320 CDI':5000,
+  '2006 E350':37250,
+  '2006 E500':2600,
+  '2006 E55':28150,
+  '2006 E550':650,
+  '2006 GL450':650,
+  '2006 ML350':31551,
+  '2006 ML500':14801,
+  '2006 R350':18000,
+  '2006 R500':22700,
+  '2006 S 430':500,
+  '2006 S430':650,
+  '2006 S500':14650,
+  '2006 S550':20700,
+  '2006 S600':2000,
+  '2006 SL 500':17750,
+  '2006 SL55 AMG':2000,
+  '2006 SLK 350':900,
+  '2006 SLK280':7700,
+  '2006 SLK300':2750,
+  '2006 SLK350':650,
+  '2006 SLK55 AMG':650,
+  '2006 SPRINTER':9750,
+  '2006 SPRINTER 2300':2250,
+  '2006 SPRINTER 2500':26850,
+  '2006 Sprinter 3500':8550,
+  '2006 c350':1300,
+  '2007 C230':19400,
+  '2007 C280':3750,
+  '2007 CL500':8900,
+  '2007 CL63':450,
+  '2007 CLK350':17100,
+  '2007 CLK500':8150,
+  '2007 CLK63':3950,
+  '2007 CLS 500':3400,
+  '2007 CLS550':13300,
+  '2007 CLS63':12400,
+  '2007 E320 Diesel':1750,
+  '2007 E350':50400,
+  '2007 E550':1300,
+  '2007 E63':21500,
+  '2007 GL 450':26600,
+  '2007 GL450':6250,
+  '2007 ML 350':14035,
+  '2007 ML320 CDI':12150,
+  '2007 ML500':650,
+  '2007 ML63':9000,
+  '2007 Porsche 911 4WD':11500,
+  '2007 R320 CDI':6650,
+  '2007 R350':4950,
+  '2007 R500':2750,
+  '2007 S 65':2000,
+  '2007 S430':650,
+  '2007 S550':159483.08000000002,
+  '2007 S550 4MATIC':30050,
+  '2007 S600':12051,
+  '2007 SL 550':34050,
+  '2007 SL55 AMG':2000,
+  '2007 SL550':2250,
+  '2007 SLK 280':950,
+  '2007 SLK 350':4050,
+  '2007 Sprinter 2500':17450,
+  '2007 c300':2750,
+  '2008 C300':16550,
+  '2008 C350':6400,
+  '2008 CL 550':451,
+  '2008 CLK350':3150,
+  '2008 CLK63':650,
+  '2008 CLS 550':2900,
+  '2008 E320 CDI':3000,
+  '2008 E350':22250,
+  '2008 E350 4Matic':2250,
+  '2008 E350 4Matic 722.676':2750,
+  '2008 E550':650,
+  '2008 E63':8900,
+  '2008 G500':550,
+  '2008 G55':2550,
+  '2008 GL 450':7275,
+  '2008 GL320 CDI':15500,
+  '2008 GL550':9500,
+  '2008 ML 320 CDI':6250,
+  '2008 ML 350 4Matic':12800,
+  '2008 ML 550':650,
+  '2008 ML 63':6000,
+  '2008 Maybach 62S':2800,
+  '2008 R320 CDI 4Matic':3000,
+  '2008 R350':9000,
+  '2008 S350':3000,
+  '2008 S500 4Matic':15750,
+  '2008 S550':37805.72,
+  '2008 S550 4matic':3000,
+  '2008 S63':7250,
+  '2008 SPRINTER 2500':40850,
+  '2008 Sprinter 3500':6800,
+  '2008 clk500':3650,
+  '2008 cls 63':3000,
+  '2009 C63 AMG':12000,
+  '2009 CL550 4Matic':650,
+  '2009 CL63':650,
+  '2009 CLK 350':7050,
+  '2009 CLS550':3000,
+  '2009 E350':15750,
+  '2009 E500':7250,
+  '2009 E63':5750,
+  '2009 G55 AMG':2550,
+  '2009 GL320 CDI':500,
+  '2009 GL450':4300,
+  '2009 GL550':2750,
+  '2009 ML350':6950,
+  '2009 ML350 CDI':3000,
+  '2009 S550':5600,
+  '2009 S550 4Matic':3650,
+  '2009 S63 AMG':2900,
+  '2009 SL550':650,
+  '2009 SL63 AMG':550,
+  '2009 SLK350':650,
+  '2009 Sprinter 2500':4250,
+  '2009 c300':8750,
+  '2009 c300 4Matic':3400,
+  '2010 C300 4Matic':6000,
+  '2010 C63':2750,
+  '2010 CL 500 4Matic':650,
+  '2010 CLS 500':13100,
+  '2010 E350':16519.33,
+  '2010 E350 4Matic':8750,
+  '2010 E550':15650,
+  '2010 E550 4Matic':2250,
+  '2010 E63 AMG':3000,
+  '2010 G500':2550,
+  '2010 G55':2550,
+  '2010 GL 450':4050,
+  '2010 GLK 350':27450,
+  '2010 GLK 350 4Matic':3000,
+  '2010 ML 350 Diesel':4150,
+  '2010 ML350':5975,
+  '2010 S500 4Matic':650,
+  '2010 S550':4950,
+  '2010 S550 4Matic':6650,
+  '2010 Sprinter':19750,
+  '2011 C250':1300,
+  '2011 C300':6800,
+  '2011 C300 4Matic':5000,
+  '2011 CL63 AMG':2750,
+  '2011 E350':21900,
+  '2011 E550':15947.5,
+  '2011 E550 4Matic':1250,
+  '2011 E63':7000,
+  '2011 G550':750,
+  '2011 GL450':1200,
+  '2011 GLK 350':33700,
+  '2011 ML350':3000,
+  '2011 S550':3400,
+  '2011 S550 4Matic':9500,
+  '2011 SPRINTER':30600,
+  '2011 e350 4Matic':1800,
+  '2012 C250':16527.6,
+  '2012 C300 4Matic':11750,
+  '2012 C350':3000,
+  '2012 C350 4Matic':3650,
+  '2012 CLS 500':650,
+  '2012 E350 4Matic':16750,
+  '2012 E550 4Matic':3500,
+  '2012 GL550 4Matic':650,
+  '2012 GLE350 4Matic':3000,
+  '2012 GLK 350':32150,
+  '2012 ML350':14144,
+  '2012 S350 4Matic':3000,
+  '2012 S500':3650,
+  '2012 SLK350':650,
+  '2012 Sprinter':5500,
+  '2012 Sprinter 2500':71400,
+  '2012 e350':57950,
+  '2013 C250':9650,
+  '2013 C300 4Matic':13500,
+  '2013 C350':6000,
+  '2013 C63':6500,
+  '2013 E350':52900,
+  '2013 E350 4matic':12000,
+  '2013 G550':8700,
+  '2013 GL 450 4Matic':309.33,
+  '2013 GLK 250 4Matic':6000,
+  '2013 GLK 350':8300,
+  '2013 ML350':15200,
+  '2013 S550':3000,
+  '2013 S550 4Matic':14750,
+  '2013 SL500':650,
+  '2013 glk 4Matic':7250,
+  '2013 sprinter':3000,
+  '2013 sprinter 2500':8250,
+  '2014 C350':8000,
+  '2014 C350 e':2350,
+  '2014 E350':34175.78,
+  '2014 E350 4Matic':3000,
+  '2014 G63 AMG':550,
+  '2014 GLE350':3000,
+  '2014 GLK 250 BlueTEC 4Matic':3000,
+  '2014 GLK350':3000,
+  '2014 S550':3500,
+  '2014 S63':11000,
+  '2014 Sprinter':11250,
+  '2014 c250':9550,
+  '2014 c300':7250,
+  '2015 C400 4Matic':2750,
+  '2015 E350':5750,
+  '2015 G550':3000,
+  '2015 GL450':3950,
+  '2015 GLA 250 4Matic':1562,
+  '2015 GLK 350 4Matic':1250,
+  '2015 S500 4Matic':3000,
+  '2015 Sprinter 2500':7000,
+  '2015 Sprinter 3500':16550,
+  '2016 C300 4Matic':3000,
+  '2016 CLA 250':3460,
+  '2016 E300':1850,
+  '2016 G63':3000,
+  '2016 GLC300':3215,
+  '2016 GLE350':2750,
+  '2016 ML350 4Matic':1511,
+  '2016 Sprinter':16800,
+  '2017 C43 AMG 4Matic':1850,
+  '2017 E400':3000,
+  '2017 GLC300':1500,
+  '2017 GLS 450 4Matic':896.23,
+  '2017 S63':3500,
+  '2017 Sprinter':7350,
+  '2018 GLA 250 4Matic':1730,
+  '2018 GLC 300':1648.75,
+  '2018 GLC 300 4Matic':2030,
+  '2018 ML350':3000,
+  '2018 SPRINTER':4500,
+  '2018 e300':1366,
+  '2019 C300':1368,
+  '2019 E300':1925,
+  '2019 GLS 450':1885,
+  '2019 sprinter':2750,
+  '2020 Sprinter':12000,
+  '6.9':7050,
+  'CORE CHARGE':412793.5599999999,
+  'G300':1750,
+  'Haaglunds BV-206':2000
+};
+
+function searchByModel() {
+  var model = document.getElementById('modelSelect').value;
+  if (!model) return;
+  var price = (EDITED_PRICES[model] !== undefined) ? EDITED_PRICES[model] : PRICE_DB[model];
+  var results = document.getElementById('results');
+
+  if (price === undefined || price === null) {
+    results.innerHTML = '<div class="sales-panel"><div class="sales-panel-title">No Price Found</div><div class="sales-panel-sub">No price data for <strong style="color:#c9a84c;">' + model + '</strong></div></div>';
+    results.style.display = 'block';
+    results.scrollIntoView({behavior:'smooth', block:'nearest'});
+    return;
+  }
+
+  var EMAIL = 'sunvalleymercedes@gmail.com';
+  var subj = encodeURIComponent('Transmisison inquiry - ' + model);
+  var bod  = encodeURIComponent('To: Sun Valley Mercedes Transmissions\n18453 Parthenia Pl.\nNorthridge, CA 91325\n818 782-2300\n\nI need a transmission for my ' + model + '. Please verify price and include shipping costs.\n\nCustomer Name: \nVehicle VIN: \nDestination Zip Code: \n\nThank you');
+  var href = 'mailto:' + EMAIL + '?subject=' + subj + '&body=' + bod;
+  var isEdited = EDITED_PRICES[model] !== undefined;
+  var priceLabel = '$' + price.toLocaleString() + (isEdited ? ' <span style="color:#c9a84c;font-size:11px;">(edited)</span>' : '');
+
+  results.innerHTML =
+    '<div class="sales-panel">' +
+    '<div class="sales-panel-title">Price Lookup Result</div>' +
+    '<div class="sales-panel-sub">Click model name to request a quote</div>' +
+    '<table class="sales-match-table">' +
+    '<thead><tr><th>Model</th><th>Price</th></tr></thead>' +
+    '<tbody><tr>' +
+    '<td><a href="' + href + '" style="color:#c9a84c;font-weight:bold;text-decoration:underline;">' + model + '</a></td>' +
+    '<td class="sales-match-price">' + priceLabel + '</td>' +
+    '</tr></tbody></table></div>';
+
+  results.style.display = 'block';
+  results.scrollIntoView({behavior:'smooth', block:'nearest'});
+}
+
+function savePrice(model) {
+  var newPrice = parseFloat(document.getElementById('priceEdit').value);
+  if (isNaN(newPrice) || newPrice < 0) { alert('Please enter a valid price.'); return; }
+  EDITED_PRICES[model] = newPrice;
+  document.getElementById('displayPrice').innerHTML = '$' + newPrice.toLocaleString() + ' <span style="color:#c9a84c;font-size:11px;">(edited)</span>';
+  var btn = document.querySelector('.price-save-btn');
+  btn.textContent = 'Saved!'; btn.style.background = '#1a5a2a';
+  setTimeout(function(){ btn.textContent = 'Save'; btn.style.background = '#1a4a7a'; }, 1500);
+}
+
+function resetPrice(model) {
+  delete EDITED_PRICES[model];
+  var orig = PRICE_DB[model];
+  document.getElementById('priceEdit').value = orig;
+  document.getElementById('displayPrice').innerHTML = '$' + orig.toLocaleString();
+}
+</script>
+
+</body>
+</html>
